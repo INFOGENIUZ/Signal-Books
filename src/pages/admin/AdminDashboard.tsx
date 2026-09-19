@@ -12,7 +12,7 @@ import {
   X, 
   Search, 
   Filter,
-  Sparkles,
+  Compass,
   TrendingUp,
   FolderPlus,
   ShieldAlert,
@@ -66,7 +66,7 @@ const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>
   Palette,
   HeartPulse,
   History,
-  Sparkles,
+  Compass,
   Music,
   Folder
 };

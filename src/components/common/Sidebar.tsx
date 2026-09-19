@@ -11,7 +11,6 @@ import {
   LogIn, 
   UserPlus, 
   LogOut,
-  Sparkles,
   BookMarked,
   Lock,
   X
@@ -197,7 +196,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
           <div className="p-3.5 rounded-2xl bg-gradient-to-b from-amber-950/40 to-[#18120C] border border-amber-500/25 relative overflow-hidden">
             <div className="absolute -right-4 -bottom-4 w-16 h-16 bg-amber-500/10 rounded-full blur-xl" />
             <div className="flex items-center gap-2 mb-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <BookMarked className="w-3.5 h-3.5 text-amber-400" />
               <span className="text-xs font-semibold text-amber-200">Kutubxona hikmati</span>
             </div>
             <p className="text-[11px] text-stone-300 leading-relaxed italic line-clamp-2">

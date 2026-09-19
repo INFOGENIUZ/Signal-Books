@@ -1,5 +1,5 @@
 import React from 'react';
-import { Headphones, Play, Clock, Sparkles, Star, Eye } from 'lucide-react';
+import { Headphones, Play, Clock, Star, Eye } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { AudioTrack } from '../types';
 

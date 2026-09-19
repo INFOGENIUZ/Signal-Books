@@ -6,6 +6,7 @@ import {
   CheckCheck
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
+import { WeatherClockWidget } from './WeatherClockWidget';
 
 interface HeaderProps {
   onOpenMobileMenu?: () => void;
@@ -36,12 +37,12 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
 
   return (
     <header className="sticky top-0 z-30 w-full bg-[#0F0C09]/90 backdrop-blur-xl border-b border-amber-950/60 px-4 sm:px-6 py-3 transition-colors">
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Menu & Search */}
-        <div className="flex items-center gap-3 flex-1 max-w-2xl">
+        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-2xl">
           <button
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 rounded-xl text-stone-400 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors"
+            className="lg:hidden p-2 rounded-xl text-stone-400 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors shrink-0"
             aria-label="Menyu"
           >
             <Menu className="w-5 h-5" />
@@ -56,13 +57,13 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
             <div className="w-8 h-8 rounded-lg bg-[#0E0A07] border border-amber-500/50 p-0.5 shadow-[0_0_12px_rgba(245,158,11,0.3)] flex items-center justify-center">
               <img src="/signal-books-icon.svg" alt="Signal Books" className="w-full h-full object-contain" />
             </div>
-            <span className="font-serif font-bold text-amber-300 text-sm tracking-tight hidden xs:inline">
+            <span className="font-serif font-bold text-amber-300 text-sm tracking-tight hidden md:inline">
               Signal Books
             </span>
           </button>
 
-          {/* Search bar */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full max-w-lg">
+          {/* Search bar (Hidden on mobile media CSS, visible on tablet and desktop) */}
+          <form onSubmit={handleSearchSubmit} className="header-search-form relative w-full min-w-0 max-w-lg hidden sm:block">
             <div className="relative flex items-center">
               <Search className="absolute left-3.5 w-4 h-4 text-amber-500/60 pointer-events-none" />
               <input
@@ -90,8 +91,11 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
           </form>
         </div>
 
-        {/* Right Action Icons */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Action Icons & Weather/Clock Widget */}
+        <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+          {/* Real-time Weather, Clock & Date Widget */}
+          <WeatherClockWidget />
+
           {/* Notifications Dropdown */}
           <div className="relative">
             <button

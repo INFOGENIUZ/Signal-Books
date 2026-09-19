@@ -13,8 +13,7 @@ import {
   Check, 
   Shield, 
   Camera,
-  Calendar,
-  Sparkles
+  Calendar
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 

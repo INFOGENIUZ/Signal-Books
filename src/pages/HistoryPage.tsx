@@ -1,5 +1,5 @@
 import React from 'react';
-import { History, BookOpen, Clock, ArrowRight, BookMarked, Sparkles } from 'lucide-react';
+import { History, BookOpen, Clock, ArrowRight, BookMarked } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 
 export const HistoryPage: React.FC = () => {

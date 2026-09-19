@@ -8,6 +8,7 @@ import { PdfReader } from './components/reader/PdfReader';
 import { AudioPlayer } from './components/audio/AudioPlayer';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { AuthModal } from './components/auth/AuthModal';
+import { AnimatedAtmosphere } from './components/common/AnimatedAtmosphere';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -56,7 +57,10 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0C0A08] text-stone-100 flex flex-col font-sans antialiased selection:bg-amber-500/30 selection:text-white">
+    <div className="min-h-screen bg-[#0C0A08] text-stone-100 flex flex-col font-sans antialiased selection:bg-amber-500/30 selection:text-white relative">
+      {/* Animated Atmosphere Background (Ambient luxury orbs & floating motes, completely disabled during book reading) */}
+      {!activeReadingBook && <AnimatedAtmosphere />}
+
       {/* Toast Notifications */}
       <ToastContainer />
 

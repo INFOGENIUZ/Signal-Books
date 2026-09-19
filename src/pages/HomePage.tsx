@@ -1,7 +1,6 @@
 import React from 'react';
 import { 
   Search, 
-  Sparkles, 
   ArrowRight, 
   Flame, 
   Clock, 
@@ -14,7 +13,7 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import { FeaturedBookCard } from '../components/books/FeaturedBookCard';
 import { BookCard } from '../components/books/BookCard';
-import { CategoryCard } from '../components/categories/CategoryCard';
+import { DailyQuoteAndReadingTracker } from '../components/home/DailyQuoteAndReadingTracker';
 import { Book, AudioTrack } from '../types';
 
 export const HomePage: React.FC = () => {
@@ -167,37 +166,8 @@ export const HomePage: React.FC = () => {
         </section>
       )}
 
-      {/* Categories Section */}
-      <section className="px-4 max-w-7xl mx-auto">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-              <Layers className="w-4 h-4" />
-              <span>Yo‘nalishlar</span>
-            </div>
-            <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">
-              🏷️ Kategoriyalar
-            </h2>
-            <p className="text-xs sm:text-sm text-stone-400 mt-1">
-              Barcha sohalarga oid elektron kitoblar va darsliklar fondi
-            </p>
-          </div>
-
-          <button
-            onClick={() => setActivePage('categories')}
-            className="hidden sm:flex items-center gap-1.5 text-xs font-semibold text-amber-400 hover:text-amber-300 transition-colors"
-          >
-            <span>Barcha kategoriyalar</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {popularCategories.map(cat => (
-            <CategoryCard key={cat.id} category={cat} />
-          ))}
-        </div>
-      </section>
+      {/* Interactive Reading Hub & Daily Inspiration Section */}
+      <DailyQuoteAndReadingTracker />
 
       {/* When books are empty: Pristine clean state */}
       {books.length === 0 ? (
@@ -277,7 +247,7 @@ export const HomePage: React.FC = () => {
               <div className="flex items-end justify-between mb-6">
                 <div>
                   <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                    <Sparkles className="w-4 h-4" />
+                    <Clock className="w-4 h-4" />
                     <span>Yangi nashrlar</span>
                   </div>
                   <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">

@@ -15,7 +15,6 @@ import {
   Share2,
   CheckCircle2,
   Clock,
-  ExternalLink,
   Trash2,
   AlertTriangle
 } from 'lucide-react';
@@ -229,19 +228,6 @@ export const BookDetailsPage: React.FC = () => {
               <Download className="w-4 h-4 text-amber-400" />
               <span>{isDownloading ? 'Yuklanmoqda...' : 'PDF yuklab olish'}</span>
             </button>
-
-            {driveInfo.isDrive && (
-              <a
-                href={driveInfo.viewUrl || selectedBook.googleDriveUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all"
-                title="Google Driveda yangi oynada ochish"
-              >
-                <ExternalLink className="w-4 h-4 text-amber-400" />
-                <span>Google Drive</span>
-              </a>
-            )}
 
             <button
               onClick={() => toggleFavorite(selectedBook.id)}

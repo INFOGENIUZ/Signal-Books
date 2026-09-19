@@ -16,7 +16,6 @@ import {
   Palette,
   HeartPulse,
   History,
-  Sparkles,
   Music,
   Folder,
   SlidersHorizontal,
@@ -48,7 +47,6 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Palette,
   HeartPulse,
   History,
-  Sparkles,
   Music,
   Folder
 };
@@ -176,187 +174,186 @@ export const CategoryDetailsPage: React.FC = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-      {/* Top Breadcrumb & Navigation */}
-      <div className="flex items-center justify-between">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      {/* Top Breadcrumb & Actions Navigation */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-1">
         <button
           onClick={() => setActivePage('categories')}
-          className="group flex items-center gap-2 text-xs font-semibold text-stone-400 hover:text-amber-400 transition-colors"
+          className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#140E0A]/80 hover:bg-[#1C140E] border border-amber-950/70 hover:border-amber-500/40 text-stone-400 hover:text-amber-300 text-xs font-semibold transition-all shadow-sm"
         >
-          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Barcha bo‘limlar katalogiga qaytish</span>
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1 text-amber-500/80" />
+          <span>Barcha kategoriyalar katalogi</span>
         </button>
 
         {user?.role === 'ADMIN' && (
           <button
             onClick={() => setActivePage('admin')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:bg-amber-500/20 text-xs font-semibold transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500/15 to-orange-500/15 hover:from-amber-500/25 hover:to-orange-500/25 border border-amber-500/40 text-amber-300 hover:text-amber-200 text-xs font-semibold transition-all shadow-sm"
           >
-            <PlusCircle className="w-3.5 h-3.5" />
-            <span>Admin panel orqali kitob qo‘shish</span>
+            <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
+            <span>Admin panel: Kitob yuklash</span>
           </button>
         )}
       </div>
 
-      {/* Hero Category Banner with dynamic theme color */}
+      {/* Modern, Creative Category Hero Banner (No clipped cards, elegant atmosphere) */}
       <div 
-        className="relative overflow-hidden rounded-3xl border border-amber-950/80 p-6 sm:p-10 shadow-2xl"
+        className="relative overflow-hidden rounded-3xl border border-amber-950/80 p-5 sm:p-8 md:p-10 shadow-2xl transition-all"
         style={{
-          background: `radial-gradient(ellipse at top right, rgba(245,158,11,0.18), transparent 70%), linear-gradient(135deg, #1C130B 0%, #110B07 100%)`
+          background: `radial-gradient(ellipse at top right, ${themeColor}22, transparent 65%), linear-gradient(145deg, #1A120B 0%, #100B07 100%)`
         }}
       >
-        {/* Subtle background glow circle */}
+        {/* Ambient subtle glow and large watermark icon */}
         <div 
-          className="absolute -top-24 -right-24 w-96 h-96 rounded-full blur-3xl opacity-25 pointer-events-none bg-amber-500"
+          className="absolute -top-20 -right-20 w-80 h-80 rounded-full blur-3xl opacity-20 pointer-events-none"
+          style={{ backgroundColor: themeColor }}
         />
+        <div className="absolute -right-6 -bottom-10 text-stone-500/[0.04] pointer-events-none transform -rotate-12 select-none">
+          <IconComponent className="w-64 h-64" />
+        </div>
 
-        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4 sm:gap-6">
+        <div className="relative z-10 space-y-6">
+          {/* Top Category Identity Info */}
+          <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
             <div 
-              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border border-amber-500/30 bg-amber-500/15 text-amber-400"
+              className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl flex items-center justify-center shrink-0 shadow-lg border border-amber-500/30 text-amber-400"
+              style={{
+                backgroundColor: `${themeColor}1a`,
+                borderColor: `${themeColor}4d`,
+                color: themeColor
+              }}
             >
               <IconComponent className="w-8 h-8 sm:w-10 sm:h-10" />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
+            <div className="space-y-2 flex-1 min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
                 <span 
-                  className="px-2.5 py-0.5 rounded-full text-[11px] font-bold tracking-wider uppercase border bg-amber-500/10 text-amber-400 border-amber-500/30"
+                  className="px-2.5 py-0.5 rounded-full text-[10px] sm:text-[11px] font-bold tracking-wider uppercase border font-mono"
+                  style={{
+                    backgroundColor: `${themeColor}18`,
+                    color: themeColor,
+                    borderColor: `${themeColor}38`
+                  }}
                 >
-                  Bo‘lim sahifasi
+                  Bo‘lim Fondi
                 </span>
-                <span className="text-xs text-amber-400/70 font-mono">
+                <span className="text-[11px] sm:text-xs text-stone-500 font-mono">
                   #{category.slug}
                 </span>
               </div>
 
-              <h1 className="font-serif-title text-2xl sm:text-4xl font-extrabold text-stone-100 tracking-tight">
+              <h1 className="font-serif-title text-2xl sm:text-4xl font-extrabold text-stone-100 tracking-tight leading-tight">
                 {category.name}
               </h1>
 
               <p className="text-xs sm:text-sm text-stone-300 max-w-2xl leading-relaxed">
-                {category.description || 'Ushbu bo‘limda eng sara kitoblar, ilmiy adabiyotlar va mutolaa materiallari jamlangan.'}
+                {category.description || 'Ushbu bo‘limda eng sara kitoblar, darsliklar va elektron mutolaa materiallari jamlangan.'}
               </p>
             </div>
           </div>
 
-          {/* Quick stats pills */}
-          <div className="flex items-center gap-3 shrink-0 self-stretch md:self-auto justify-start md:justify-end">
-            <div className="bg-[#18120B]/90 border border-amber-950/90 rounded-2xl p-3.5 text-center min-w-[105px] shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-stone-100">
+          {/* Fully Responsive Stats Ribbon (Never truncated, fits all screens) */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-5 border-t border-amber-950/70">
+            <div className="flex flex-col items-center sm:items-start p-3 rounded-2xl bg-black/35 border border-stone-800/80 backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 text-stone-400 text-[10px] sm:text-xs font-medium">
+                <BookOpen className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate">Kitoblar</span>
+              </div>
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-stone-100 mt-1">
                 {categoryBooks.length}
-              </div>
-              <div className="text-[11px] text-stone-400 mt-0.5 font-medium">Mavjud kitoblar</div>
+              </span>
             </div>
 
-            <div className="bg-[#18120B]/90 border border-amber-950/90 rounded-2xl p-3.5 text-center min-w-[105px] shadow-md">
-              <div className="text-xl sm:text-2xl font-bold text-amber-400">
+            <div className="flex flex-col items-center sm:items-start p-3 rounded-2xl bg-black/35 border border-stone-800/80 backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 text-stone-400 text-[10px] sm:text-xs font-medium">
+                <Headphones className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                <span className="truncate">Audiolar</span>
+              </div>
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-amber-300 mt-1">
                 {totalAudioCount}
-              </div>
-              <div className="text-[11px] text-stone-400 mt-0.5 font-medium">Audio kitoblar</div>
+              </span>
             </div>
 
-            {subcategories.length > 0 && (
-              <div className="bg-[#18120B]/90 border border-amber-950/90 rounded-2xl p-3.5 text-center min-w-[105px] shadow-md">
-                <div className="text-xl sm:text-2xl font-bold text-emerald-400">
-                  {subcategories.length}
-                </div>
-                <div className="text-[11px] text-stone-400 mt-0.5 font-medium">
-                  {category.id === 'cat-2' ? 'Sinflar' : 'Ichki bo‘lim'}
-                </div>
+            <div className="flex flex-col items-center sm:items-start p-3 rounded-2xl bg-black/35 border border-stone-800/80 backdrop-blur-sm">
+              <div className="flex items-center gap-1.5 text-stone-400 text-[10px] sm:text-xs font-medium">
+                {category.id === 'cat-2' ? (
+                  <GraduationCap className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                ) : (
+                  <Layers className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                )}
+                <span className="truncate">
+                  {category.id === 'cat-2' ? 'Sinflar' : 'Yo‘nalishlar'}
+                </span>
               </div>
-            )}
+              <span className="text-lg sm:text-2xl font-extrabold font-mono text-emerald-400 mt-1">
+                {subcategories.length}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Subcategories (Sinflar / Ichki bo'limlar) Navigation */}
-      <div className="bg-[#140E0A]/95 border border-amber-950/80 p-4 sm:p-5 rounded-2xl space-y-4 shadow-xl">
+      {/* Subcategories (Yo‘nalishlar & Sinflar) - Modern, Creative & Highly Usable Layout */}
+      <div className="rounded-3xl bg-[#140E0A]/90 border border-amber-950/80 p-5 sm:p-6 shadow-xl space-y-4">
+        {/* Section Header with Quick Counter and Admin Action */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-950/70">
           <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-              {category.id === 'cat-2' ? <GraduationCap className="w-4 h-4" /> : <Layers className="w-4 h-4" />}
+            <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+              {category.id === 'cat-2' ? <GraduationCap className="w-4 h-4" /> : <Tag className="w-4 h-4" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
-                  {category.id === 'cat-2' ? 'Sinflar bo‘yicha darsliklar' : 'Ichki bo‘limlar & Yo‘nalishlar'}
+                <h3 className="text-sm sm:text-base font-bold text-stone-100 font-serif-title tracking-tight">
+                  {category.id === 'cat-2' ? 'Sinflar bo‘yicha darsliklar' : 'Ichki yo‘nalishlar va janrlar'}
                 </h3>
                 {subcategories.length > 0 && (
-                  <span className="px-2 py-0.5 rounded-full bg-[#1F1610] border border-amber-950 text-[11px] text-stone-400 font-mono">
+                  <span className="px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-300 font-mono">
                     {subcategories.length} ta
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-stone-400 mt-0.5">
+              <p className="text-[11px] sm:text-xs text-stone-400 mt-0.5">
                 {category.id === 'cat-2' 
-                  ? 'Kerakli sinfni tanlab, unga tegishli darsliklarni tezkor toping'
-                  : 'Mavzuni tanlab, kerakli yo‘nalishdagi kitoblarni saralang'}
+                  ? 'Kerakli sinf darsliklarini topish uchun quyidagi sinf tugmasini tanlang'
+                  : 'Mavzu bo‘yicha saralash uchun kerakli yo‘nalish ustiga bosing'}
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end sm:self-auto">
-            {/* Quick dropdown selector for fast navigation */}
-            {subcategories.length > 0 && (
-              <div className="relative">
-                <select
-                  value={selectedSubCategoryFilter || ''}
-                  onChange={(e) => setSelectedSubCategoryFilter(e.target.value ? e.target.value : null)}
-                  className="bg-[#1C140E] border border-amber-950/90 hover:border-amber-500/40 text-stone-200 text-xs rounded-xl px-3 py-1.5 pr-8 focus:border-amber-500 focus:outline-none appearance-none cursor-pointer transition-colors shadow-sm"
-                >
-                  <option value="">
-                    {category.id === 'cat-2' ? 'Barcha sinflar' : 'Barcha yo‘nalishlar'} ({books.filter(b => b.categoryId === category.id || b.categoryName === category.name).length})
-                  </option>
-                  {subcategories.map(sub => {
-                    const count = getSubcategoryBookCount(sub.id, sub.name);
-                    return (
-                      <option key={sub.id} value={sub.id}>
-                        {sub.name} {count > 0 ? `(${count} ta kitob)` : ''}
-                      </option>
-                    );
-                  })}
-                </select>
-                <ChevronDown className="w-3.5 h-3.5 text-stone-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              </div>
-            )}
-
-            {isAdmin && (
-              <button
-                onClick={() => setIsAddSubModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-semibold transition-all shadow-sm shrink-0"
-              >
-                <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
-                <span>+ Yangi {category.id === 'cat-2' ? 'sinf' : 'ichki bo‘lim'}</span>
-              </button>
-            )}
-          </div>
+          {isAdmin && (
+            <button
+              onClick={() => setIsAddSubModalOpen(true)}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 hover:text-amber-200 border border-amber-500/30 text-xs font-semibold transition-all shadow-sm"
+            >
+              <PlusCircle className="w-3.5 h-3.5 text-amber-400" />
+              <span>+ Yangi {category.id === 'cat-2' ? 'sinf' : 'yo‘nalish'}</span>
+            </button>
+          )}
         </div>
 
         {subcategories.length > 0 ? (
           <div className="space-y-3">
-            {/* Wrap-grid of subcategories: clearly visible, easy to click, no awkward scroll */}
-            <div className="flex flex-wrap gap-2 sm:gap-2.5 pt-1">
-              {/* All button */}
+            {/* Elegant Chip Bar (Modern pills with clear states and counts) */}
+            <div className="flex flex-wrap items-center gap-2 sm:gap-2.5 pt-1">
+              {/* "All" button */}
               <button
                 onClick={() => setSelectedSubCategoryFilter(null)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 shadow-sm ${
+                className={`inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 shadow-sm ${
                   !selectedSubCategoryFilter
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-stone-950 font-bold shadow-md shadow-amber-500/25 ring-2 ring-amber-400/40 scale-[1.02]'
-                    : 'bg-[#1C140E] text-stone-300 hover:text-amber-300 hover:bg-[#251A12] border border-amber-950/90 hover:border-amber-500/40'
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold shadow-md shadow-amber-500/20 ring-1 ring-amber-400/50'
+                    : 'bg-[#1A130E] text-stone-300 hover:text-amber-300 hover:bg-[#241912] border border-stone-800/80 hover:border-amber-500/40'
                 }`}
               >
                 <span>{category.id === 'cat-2' ? 'Barcha sinflar' : 'Barchasi'}</span>
-                {books.filter(b => b.categoryId === category.id || b.categoryName === category.name).length > 0 && (
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                    !selectedSubCategoryFilter ? 'bg-black/25 text-stone-950' : 'bg-amber-500/20 text-amber-300'
-                  }`}>
-                    {books.filter(b => b.categoryId === category.id || b.categoryName === category.name).length}
-                  </span>
-                )}
+                <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                  !selectedSubCategoryFilter ? 'bg-black/25 text-stone-950' : 'bg-amber-500/15 text-amber-300'
+                }`}>
+                  {books.filter(b => b.categoryId === category.id || b.categoryName === category.name).length}
+                </span>
               </button>
 
-              {/* Individual subcategory items */}
+              {/* Individual subcategory pills */}
               {subcategories.map(sub => {
                 const count = getSubcategoryBookCount(sub.id, sub.name);
                 const isSelected = selectedSubCategoryFilter === sub.id;
@@ -365,10 +362,10 @@ export const CategoryDetailsPage: React.FC = () => {
                   <button
                     key={sub.id}
                     onClick={() => setSelectedSubCategoryFilter(isSelected ? null : sub.id)}
-                    className={`group flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 shadow-sm ${
+                    className={`group inline-flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 shadow-sm ${
                       isSelected
-                        ? 'bg-gradient-to-r from-amber-500 to-orange-600 text-stone-950 font-bold shadow-lg shadow-amber-500/30 ring-2 ring-amber-400/50 scale-[1.02]'
-                        : 'bg-[#1A120C] text-stone-200 hover:text-amber-300 hover:bg-[#24180F] border border-amber-950/90 hover:border-amber-500/40'
+                        ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 font-bold shadow-md shadow-amber-500/25 ring-1 ring-amber-400/50'
+                        : 'bg-[#1A130E] text-stone-300 hover:text-amber-200 hover:bg-[#241912] border border-stone-800/80 hover:border-amber-500/40'
                     }`}
                   >
                     {isSelected ? (
@@ -379,20 +376,20 @@ export const CategoryDetailsPage: React.FC = () => {
                       <Tag className="w-3 h-3 text-stone-500 group-hover:text-amber-400/70 transition-colors shrink-0" />
                     )}
                     <span>{sub.name}</span>
-                    {count > 0 ? (
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
-                        isSelected ? 'bg-black/25 text-stone-950' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                    {count > 0 && (
+                      <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                        isSelected ? 'bg-black/25 text-stone-950' : 'bg-amber-500/15 text-amber-300 border border-amber-500/25'
                       }`}>
-                        +{count}
+                        {count}
                       </span>
-                    ) : null}
+                    )}
                     {isSelected && (
                       <span 
                         onClick={(e) => {
                           e.stopPropagation();
                           setSelectedSubCategoryFilter(null);
                         }}
-                        className="ml-1 p-0.5 rounded-full hover:bg-black/20 text-stone-950"
+                        className="ml-0.5 p-0.5 rounded-full hover:bg-black/20 text-stone-950"
                         title="Filtrni tozalash"
                       >
                         <X className="w-3.5 h-3.5" />
@@ -405,10 +402,10 @@ export const CategoryDetailsPage: React.FC = () => {
 
             {/* Active subcategory info badge */}
             {activeSubcategory && (
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-[#1C140E] border border-amber-500/30 text-xs mt-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-2xl bg-[#1C140E] border border-amber-500/30 text-xs mt-2">
                 <div className="flex items-center gap-2 text-stone-200">
                   <span className="w-2 h-2 rounded-full bg-amber-400" />
-                  <span className="text-amber-400 font-bold">Tanlangan: {activeSubcategory.name}</span>
+                  <span className="text-amber-300 font-bold">Tanlangan: {activeSubcategory.name}</span>
                   {activeSubcategory.description && (
                     <span className="text-stone-400 hidden md:inline">— {activeSubcategory.description}</span>
                   )}
@@ -418,31 +415,29 @@ export const CategoryDetailsPage: React.FC = () => {
                   className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 font-semibold self-end sm:self-auto"
                 >
                   <X className="w-3 h-3" />
-                  <span>Filtrni tozalash (Barcha kitoblarni ko‘rsatish)</span>
+                  <span>Filtrni tozalash</span>
                 </button>
               </div>
             )}
           </div>
         ) : (
-          <div className="py-4 px-4 rounded-xl bg-[#1C140E] text-xs text-stone-400 flex items-center justify-between">
-            <span>Ushbu bo‘limda hozircha ichki bo‘limlar belgilanmagan.</span>
-            {isAdmin ? (
+          <div className="py-4 px-4 rounded-2xl bg-[#18120C] text-xs text-stone-400 flex items-center justify-between border border-stone-800/80">
+            <span>Ushbu bo‘limda hozircha alohida ichki yo‘nalishlar belgilanmagan.</span>
+            {isAdmin && (
               <button
                 onClick={() => setIsAddSubModalOpen(true)}
                 className="text-amber-400 hover:underline font-semibold"
               >
-                Birinchi bo‘lib qo‘shish
+                + Yo‘nalish qo‘shish
               </button>
-            ) : (
-              <span className="text-stone-500 text-[11px]">Darsliklar va kitoblar barcha ro‘yxatda mavjud</span>
             )}
           </div>
         )}
       </div>
 
-      {/* Control bar: search, formats, and sort */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-[#140E0A]/90 border border-amber-950/80 p-3 sm:p-4 rounded-2xl">
-        {/* Search within this category */}
+      {/* Unified Search, Format and Sort Control Deck */}
+      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3.5 bg-[#140E0A]/90 border border-amber-950/80 p-3 sm:p-4 rounded-2xl shadow-md">
+        {/* Search within category */}
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-amber-500/70" />
           <input

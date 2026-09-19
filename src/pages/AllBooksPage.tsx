@@ -1,8 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { 
   ArrowUpDown, 
-  X, 
-  Sparkles
+  X
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { BookCard } from '../components/books/BookCard';

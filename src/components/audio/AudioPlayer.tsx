@@ -10,8 +10,7 @@ import {
   ChevronUp, 
   ChevronDown,
   Headphones,
-  Sliders,
-  Sparkles
+  Sliders
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 

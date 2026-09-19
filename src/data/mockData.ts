@@ -46,10 +46,10 @@ export const INITIAL_CATEGORIES: Category[] = [
     iconName: 'Laptop',
     booksCount: 0,
     color: '#6366F1',
-    description: 'Dasturlash, AI, kiberxavfsizlik va axborot texnologiyalari',
+    description: 'Dasturlash, axborot texnologiyalari va kiberxavfsizlik',
     subcategories: [
       { id: 'sub-inf-1', categoryId: 'cat-3', name: 'Dasturlash (Python, Web, C++)', slug: 'dasturlash' },
-      { id: 'sub-inf-2', categoryId: 'cat-3', name: 'Sun’iy intellekt & Data Science', slug: 'ai-data' },
+      { id: 'sub-inf-2', categoryId: 'cat-3', name: 'Ma’lumotlar fani & Algoritmlar', slug: 'data-science' },
       { id: 'sub-inf-3', categoryId: 'cat-3', name: 'Kiberxavfsizlik & Tarmoqlar', slug: 'kiberxavfsizlik' },
       { id: 'sub-inf-4', categoryId: 'cat-3', name: 'Kompyuter savodxonligi', slug: 'kompyuter-savodxonligi' }
     ]
