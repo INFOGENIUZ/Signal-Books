@@ -1,0 +1,381 @@
+@import "tailwindcss";
+
+@layer base {
+  html {
+    /* Fluid smooth scrolling and native momentum on mobile */
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #0C0A08;
+    color: #F5F5F4;
+    overflow-x: hidden;
+    min-width: 320px;
+    /* Prevent blue tap highlight on mobile devices */
+    -webkit-tap-highlight-color: transparent;
+    /* Safe-area insets for notched phones (iPhone, Modern Androids) */
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Optimized interactive touch target sizing for buttons/inputs */
+  button, 
+  a, 
+  input, 
+  select, 
+  textarea {
+    touch-action: manipulation;
+  }
+}
+
+.font-serif-title {
+  font-family: 'Playfair Display', Georgia, Cambria, serif;
+}
+
+/* Custom warm subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0C0A08;
+}
+::-webkit-scrollbar-thumb {
+  background: #29221B;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #F59E0B;
+}
+
+/* Hide scrollbar utility for touch swipe carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Library Glassmorphism & Aesthetics */
+.glass-library {
+  background: rgba(22, 17, 13, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.glass-library-hover:hover {
+  background: rgba(30, 23, 17, 0.95);
+  border-color: rgba(245, 158, 11, 0.35);
+  box-shadow: 0 10px 30px -10px rgba(245, 158, 11, 0.2);
+}
+
+.glow-amber {
+  box-shadow: 0 0 25px -5px rgba(245, 158, 11, 0.35);
+}
+
+.glow-orange {
+  box-shadow: 0 0 35px -8px rgba(234, 88, 12, 0.4);
+}
+
+.glow-orange-lg {
+  box-shadow: 0 0 50px -10px rgba(245, 158, 11, 0.3);
+}
+
+/* ==========================================================================
+   RESPONSIVE MEDIA QUERIES (MEDIA CSS) FOR ALL VIEWPORTS & DEVICES
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. EXTRA SMALL & MOBILE PHONES (max-width: 480px)
+   e.g. iPhone SE, Galaxy S, Pixel compact screens
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 480px) {
+  /* Fluid typography scaling */
+  h1, .responsive-hero-title {
+    font-size: 1.65rem !important;
+    line-height: 1.25 !important;
+    letter-spacing: -0.02em !important;
+  }
+
+  h2 {
+    font-size: 1.35rem !important;
+    line-height: 1.3 !important;
+  }
+
+  h3 {
+    font-size: 1.1rem !important;
+  }
+
+  /* Compact padding on containers to maximize screen real estate */
+  .responsive-container,
+  .max-w-7xl,
+  main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  /* Modals: full-width sheet on small phones */
+  .responsive-modal,
+  [role="dialog"] {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 0.5rem auto !important;
+    border-radius: 1.25rem !important;
+    padding: 1rem !important;
+  }
+
+  /* Compact Audio Player on small screens */
+  .audio-player-container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  .audio-player-track-info {
+    max-width: 140px !important;
+  }
+
+  .audio-player-controls {
+    gap: 0.35rem !important;
+  }
+
+  /* Hero search bar full width and vertically aligned buttons if needed */
+  .hero-search-form {
+    border-radius: 1rem !important;
+  }
+
+  /* Tables: allow smooth horizontal touch scrolling */
+  .table-responsive-wrapper {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Quick action buttons on mobile */
+  .mobile-touch-target {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   2. STANDARD MOBILE PHONES (max-width: 640px)
+   e.g. Modern smartphones in portrait mode
+   -------------------------------------------------------------------------- */
+@media screen and (max-width: 640px) {
+  /* Book card grid layout: exactly 2 compact columns with tight gaps */
+  .books-grid-mobile {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  /* Reader header buttons grouping */
+  .reader-toolbar {
+    flex-wrap: wrap !important;
+    gap: 0.5rem !important;
+    padding: 0.5rem 0.75rem !important;
+  }
+
+  /* Stats cards in admin or profile */
+  .responsive-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 0.65rem !important;
+  }
+
+  /* Hide non-essential decorative badges on mobile */
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  /* Safe space at the bottom for floating elements (Bottom Nav & Audio Player) */
+  .content-bottom-safe-space {
+    padding-bottom: 6.5rem !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   3. TABLETS & PHABLETS (min-width: 641px) and (max-width: 768px)
+   e.g. iPad Mini, Large Foldables, Small Tablets
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 641px) and (max-width: 768px) {
+  .books-grid-mobile {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  .audio-player-track-info {
+    max-width: 220px !important;
+  }
+
+  .responsive-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   4. MEDIUM TABLETS (min-width: 769px) and (max-width: 1024px)
+   e.g. iPad Air, iPad Pro 11", Android Tablets
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .books-grid-tablet {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 1.25rem !important;
+  }
+
+  .responsive-container {
+    padding-left: 1.5rem !important;
+    padding-right: 1.5rem !important;
+  }
+
+  /* Ensure drawer menus have comfortable widths */
+  .mobile-drawer {
+    width: 320px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   5. LAPTOPS & DESKTOPS (min-width: 1025px)
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1025px) {
+  /* Sidebar is fixed on the left at 260px */
+  .desktop-sidebar-offset {
+    margin-left: 260px !important;
+  }
+
+  /* Floating audio player aligns with sidebar */
+  .audio-player-desktop-align {
+    left: 260px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. ULTRA-WIDE & HIGH RESOLUTION MONITORS (min-width: 1536px)
+   -------------------------------------------------------------------------- */
+@media screen and (min-width: 1536px) {
+  .max-w-7xl {
+    max-width: 88rem !important; /* 1408px centered comfort zone */
+  }
+
+  .reading-text-container {
+    max-width: 54rem !important; /* Ideal reading line length ~75ch */
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   7. LANDSCAPE ORIENTATION ON PHONES (max-height: 540px and landscape)
+   Allows great reading and browsing when phone is turned sideways
+   -------------------------------------------------------------------------- */
+@media screen and (max-height: 540px) and (orientation: landscape) {
+  /* Reduce sticky header height */
+  header {
+    padding-top: 0.35rem !important;
+    padding-bottom: 0.35rem !important;
+  }
+
+  /* Compact Audio Player in landscape */
+  .audio-player-container {
+    padding-top: 0.25rem !important;
+    padding-bottom: 0.25rem !important;
+  }
+
+  /* Reader fullscreen mode gets maximum vertical reading room */
+  .reader-viewport {
+    height: 100vh !important;
+    max-height: 100vh !important;
+  }
+
+  /* Modals don't overflow viewport vertically */
+  [role="dialog"] {
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   8. TOUCH SCREENS & MOBILE POINTERS (@media (hover: none) and (pointer: coarse))
+   Enhance usability for fingers instead of mouse cursor
+   -------------------------------------------------------------------------- */
+@media (hover: none) and (pointer: coarse) {
+  /* Ensure book quick action buttons are accessible without needing hover */
+  .touch-show-always {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  /* Generous touch targets */
+  button, 
+  .touch-target {
+    min-height: 40px;
+  }
+
+  /* Smooth native rubber-band scrolling */
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   9. HIGH-DENSITY RETINA & OLED SCREENS
+   -------------------------------------------------------------------------- */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Ultra-crisp thin borders */
+  .crisp-border {
+    border-width: 0.5px !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   10. PRINT MEDIA STYLES (@media print)
+   Clean, book-formatted printable output without web UI clutter
+   -------------------------------------------------------------------------- */
+@media print {
+  /* Hide all web navigation, players, and overlays */
+  header,
+  aside,
+  footer,
+  .audio-player-container,
+  .fixed,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  body, 
+  main {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .print-readable-text {
+    font-size: 12pt !important;
+    line-height: 1.6 !important;
+    color: #111111 !important;
+    font-family: Georgia, serif !important;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   11. ACCESSIBILITY: REDUCED MOTION (@media (prefers-reduced-motion: reduce))
+   -------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

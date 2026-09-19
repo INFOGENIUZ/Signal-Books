@@ -1,0 +1,8 @@
+{
+  "name": "Remix Remix Kitoblar Olami",
+  "description": "Bilim sari ochilgan raqamli eshik — zamonaviy elektron va audio kitoblar kutubxonasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
