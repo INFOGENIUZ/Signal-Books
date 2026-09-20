@@ -95,8 +95,8 @@ export const WeatherClockWidget: React.FC = () => {
       const cached = localStorage.getItem('signal_weather_cache');
       if (cached) {
         const parsed = JSON.parse(cached);
-        // If cache is less than 30 mins old, use it
-        if (Date.now() - parsed.timestamp < 30 * 60 * 1000) {
+        // If cache is less than 30 mins old and represents Tashkent, use it
+        if (Date.now() - parsed.timestamp < 30 * 60 * 1000 && parsed.data?.cityName === 'Toshkent') {
           return parsed.data;
         }
       }
@@ -119,12 +119,16 @@ export const WeatherClockWidget: React.FC = () => {
     return () => clearInterval(timer);
   }, []);
 
-  // 2. Fetch live weather
-  const fetchWeather = async (lat = 41.2995, lon = 69.2401, city = 'Toshkent') => {
+  // 2. Fetch live weather directly for Tashkent (no browser geolocation request)
+  const TASHKENT_LAT = 41.2995;
+  const TASHKENT_LON = 69.2401;
+  const TASHKENT_NAME = 'Toshkent';
+
+  const fetchWeather = async () => {
     setIsLoadingWeather(true);
     try {
       const res = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`
+        `https://api.open-meteo.com/v1/forecast?latitude=${TASHKENT_LAT}&longitude=${TASHKENT_LON}&current_weather=true`
       );
       if (res.ok) {
         const data = await res.json();
@@ -134,7 +138,7 @@ export const WeatherClockWidget: React.FC = () => {
           weatherCode: cur.weathercode,
           isDay: Boolean(cur.is_day),
           windSpeed: Math.round(cur.windspeed),
-          cityName: city,
+          cityName: TASHKENT_NAME,
           lastUpdated: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' })
         };
         setWeather(newWeather);
@@ -153,20 +157,8 @@ export const WeatherClockWidget: React.FC = () => {
   };
 
   useEffect(() => {
-    // Attempt geolocation on initial load, otherwise default to Tashkent
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          fetchWeather(pos.coords.latitude, pos.coords.longitude, 'Mahalliy shahar');
-        },
-        () => {
-          fetchWeather(41.2995, 69.2401, 'Toshkent');
-        },
-        { timeout: 5000 }
-      );
-    } else {
-      fetchWeather(41.2995, 69.2401, 'Toshkent');
-    }
+    // Brauzerdan ruxsat so'ramaydi, to'g'ridan-to'g'ri Toshkent shahrining ob-havosini ko'rsatadi
+    fetchWeather();
 
     // Refresh every 20 minutes
     const interval = setInterval(() => {
