@@ -1,4 +1,5 @@
 import React from 'react';
+import { Analytics } from '@vercel/analytics/react';
 import { LibraryProvider, useLibrary } from './context/LibraryContext';
 import { Sidebar } from './components/common/Sidebar';
 import { Header } from './components/common/Header';
@@ -106,6 +107,7 @@ export default function App() {
   return (
     <LibraryProvider>
       <MainLayout />
+      <Analytics />
     </LibraryProvider>
   );
 }
