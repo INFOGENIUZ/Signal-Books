@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Bookmark, BookOpen, Headphones, Eye } from 'lucide-react';
+import { Star, Bookmark, BookText, AudioLines, Eye } from 'lucide-react';
 import { Book } from '../../types';
 import { useLibrary } from '../../context/LibraryContext';
 
@@ -8,11 +8,9 @@ interface BookCardProps {
 }
 
 export const BookCard: React.FC<BookCardProps> = ({ book }) => {
-  const { openBookDetails, startReading, favorites, toggleFavorite, getBookSavedPage } = useLibrary();
+  const { openBookDetails, startReading, favorites, toggleFavorite } = useLibrary();
 
   const isFav = favorites.includes(book.id);
-  const savedPage = getBookSavedPage(book.id);
-  const progressPercent = savedPage > 1 ? Math.min(100, Math.round((savedPage / Math.max(1, book.pages || 1)) * 100)) : 0;
 
   return (
     <div 
@@ -42,7 +40,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
           )}
           {book.hasAudio && (
             <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-stone-900/80 text-amber-300 border border-amber-500/30 backdrop-blur-md flex items-center gap-1">
-              <Headphones className="w-2.5 h-2.5 text-amber-400" />
+              <AudioLines className="w-2.5 h-2.5 text-amber-400" />
               <span>Audio</span>
             </span>
           )}
@@ -66,19 +64,6 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
           <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-current' : ''}`} />
         </button>
 
-        {/* Saved Progress Indicator (when not hovering) */}
-        {savedPage > 1 && (
-          <div className="absolute bottom-2.5 left-2.5 right-2.5 group-hover:opacity-0 transition-opacity">
-            <div className="bg-[#120D08]/90 backdrop-blur-md rounded-lg px-2 py-1 flex items-center justify-between text-[10px] text-amber-300 font-mono border border-amber-500/40">
-              <span className="font-semibold">{savedPage}-bet</span>
-              <span className="text-stone-400">{progressPercent}%</span>
-            </div>
-            <div className="w-full bg-stone-800/80 h-1 rounded-full mt-1 overflow-hidden">
-              <div className="bg-amber-400 h-full rounded-full" style={{ width: `${progressPercent}%` }} />
-            </div>
-          </div>
-        )}
-
         {/* Quick Read Button on hover */}
         <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <button
@@ -88,8 +73,8 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
             }}
             className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center justify-center gap-2 shadow-lg backdrop-blur-md transition-all"
           >
-            <BookOpen className="w-3.5 h-3.5 text-stone-950" />
-            <span>{savedPage > 1 ? `Davom etish (${savedPage}-bet)` : 'O‘qish'}</span>
+            <BookText className="w-3.5 h-3.5 text-stone-950" />
+            <span>O‘qish</span>
           </button>
         </div>
       </div>

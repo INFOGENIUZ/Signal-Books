@@ -3,6 +3,8 @@ import {
   doc, 
   getDoc,
   setDoc, 
+  updateDoc,
+  increment,
   deleteDoc, 
   onSnapshot, 
   Unsubscribe 
@@ -149,6 +151,27 @@ export const FirebaseService = {
     } catch (error) {
       console.error('Firebase deleteBook error:', error);
       handleFirestoreError(error, OperationType.DELETE, path);
+    }
+  },
+
+  // Increment live book view/open count in Firestore
+  async incrementBookViews(bookId: string): Promise<void> {
+    if (!bookId) return;
+    const path = `books/${bookId}`;
+    try {
+      const bookRef = doc(db, 'books', bookId);
+      await updateDoc(bookRef, {
+        views: increment(1),
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      try {
+        const snap = await getDoc(doc(db, 'books', bookId));
+        const currentViews = snap.exists() ? ((snap.data()?.views as number) || 0) : 0;
+        await setDoc(doc(db, 'books', bookId), { views: currentViews + 1 }, { merge: true });
+      } catch (innerErr) {
+        console.warn('Could not increment view count in cloud:', innerErr);
+      }
     }
   },
 

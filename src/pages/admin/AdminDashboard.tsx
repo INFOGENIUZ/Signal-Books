@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   BarChart3, 
   BookOpen, 
+  BookText,
   Users, 
   Eye, 
   Download, 
@@ -24,19 +25,27 @@ import {
   HelpCircle,
   GraduationCap,
   Laptop,
+  Code2,
   Divide,
+  Binary,
   Globe,
   Microscope,
+  Atom,
   Smile,
+  Sparkles,
   Languages,
   Brain,
+  BrainCircuit,
   Briefcase,
   Scale,
   Palette,
   HeartPulse,
+  Activity,
   History,
   Music,
+  Music2,
   Folder,
+  FolderGit2,
   ArrowRight,
   RefreshCw,
   FileCheck,
@@ -50,6 +59,7 @@ import {
   List,
   EyeOff,
   Headphones,
+  AudioLines,
   SlidersHorizontal,
   ChevronRight,
   Clock
@@ -57,25 +67,36 @@ import {
 import { useLibrary } from '../../context/LibraryContext';
 import { Book, Category, BookLanguage } from '../../types';
 import { parseGoogleDriveUrl, GoogleDriveParsedInfo, generateFirstPageBookCover } from '../../utils/googleDrive';
+import { AiBookAnalysisCard } from '../../components/admin/AiBookAnalysisCard';
+import { AiBookAnalysisResult, analyzeBookWithAI } from '../../services/aiBookAnalysisService';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  BookOpen,
+  BookOpen: BookText,
+  BookText,
   GraduationCap,
-  Laptop,
-  Divide,
-  Globe,
-  Microscope,
-  Smile,
+  Laptop: Code2,
+  Code2,
+  Divide: Binary,
+  Binary,
+  Globe: Compass,
+  Compass,
+  Microscope: Atom,
+  Atom,
+  Smile: Sparkles,
+  Sparkles,
   Languages,
-  Brain,
+  Brain: BrainCircuit,
+  BrainCircuit,
   Briefcase,
   Scale,
   Palette,
-  HeartPulse,
+  HeartPulse: Activity,
+  Activity,
   History,
-  Compass,
-  Music,
-  Folder
+  Music: Music2,
+  Music2,
+  Folder: FolderGit2,
+  FolderGit2
 };
 
 const THEME_COLORS = [
@@ -169,6 +190,63 @@ export const AdminDashboard: React.FC = () => {
     audioDuration: '3 soat 45 daqiqa'
   });
 
+  // State for AI re-analysis inside Edit Book modal
+  const [isEditAnalyzing, setIsEditAnalyzing] = useState(false);
+
+  // Apply AI analysis results to new book form
+  const handleApplyAiAnalysis = (analysis: AiBookAnalysisResult) => {
+    setFormData(prev => ({
+      ...prev,
+      title: analysis.title || prev.title,
+      authorName: analysis.authorName || prev.authorName,
+      categoryId: analysis.categoryId || prev.categoryId,
+      subcategoryId: analysis.subcategoryId !== undefined ? analysis.subcategoryId : prev.subcategoryId,
+      language: analysis.language || prev.language,
+      pages: analysis.pages || prev.pages,
+      publicationYear: analysis.publicationYear || prev.publicationYear,
+      description: analysis.description || prev.description,
+    }));
+  };
+
+  // Re-analyze existing book inside Edit Modal
+  const handleReAnalyzeEditingBook = async () => {
+    if (!editingBook || (!editingBook.googleDriveUrl && !editingBook.pdfUrl)) {
+      showToast('Kitobda Google Drive havolasi mavjud emas', 'info');
+      return;
+    }
+    setIsEditAnalyzing(true);
+    try {
+      const res = await analyzeBookWithAI({
+        googleDriveUrl: editingBook.googleDriveUrl || editingBook.pdfUrl,
+        titleHint: editingBook.title,
+        categories
+      });
+      if (res.success && res.analysis) {
+        const a = res.analysis;
+        setEditingBook(prev => prev ? ({
+          ...prev,
+          title: a.title || prev.title,
+          authorName: a.authorName || prev.authorName,
+          categoryId: a.categoryId || prev.categoryId,
+          categoryName: a.categoryName || prev.categoryName,
+          subcategoryId: a.subcategoryId || prev.subcategoryId,
+          subcategoryName: a.subcategoryName || prev.subcategoryName,
+          language: a.language || prev.language,
+          pages: a.pages || prev.pages,
+          publicationYear: a.publicationYear || prev.publicationYear,
+          description: a.description || prev.description,
+        }) : null);
+        showToast(`«${a.title}» maʼlumotlari AI orqali qayta yangilandi!`, 'success');
+      } else {
+        showToast(res.error || 'Qayta tahlil qilib bo‘lmadi', 'error');
+      }
+    } catch {
+      showToast('Tahlilda xatolik yuz berdi', 'error');
+    } finally {
+      setIsEditAnalyzing(false);
+    }
+  };
+
   // Live parsed Google Drive info for Add Book Form
   const driveInfo: GoogleDriveParsedInfo = useMemo(() => {
     return parseGoogleDriveUrl(formData.googleDriveUrl);
@@ -210,6 +288,7 @@ export const AdminDashboard: React.FC = () => {
         b.title.toLowerCase().includes(q) ||
         b.authorName.toLowerCase().includes(q) ||
         b.categoryName.toLowerCase().includes(q) ||
+        (b.id && b.id.toLowerCase().includes(q)) ||
         (b.subcategoryName && b.subcategoryName.toLowerCase().includes(q));
 
       const matchesCat = filterCategory === 'all' || b.categoryId === filterCategory;
@@ -627,7 +706,7 @@ export const AdminDashboard: React.FC = () => {
                   : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800/40'
               }`}
             >
-              <BookOpen className="w-4 h-4" />
+              <BookText className="w-4 h-4" />
               <span>Kitoblar</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                 activeAdminTab === 'books' ? 'bg-stone-950/30 text-stone-950' : 'bg-stone-800 text-amber-400'
@@ -644,7 +723,7 @@ export const AdminDashboard: React.FC = () => {
                   : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800/40'
               }`}
             >
-              <Layers className="w-4 h-4" />
+              <LayoutGrid className="w-4 h-4" />
               <span>Bo‘limlar & Sahifalar</span>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
                 activeAdminTab === 'categories' ? 'bg-stone-950/30 text-stone-950' : 'bg-stone-800 text-amber-400'
@@ -686,7 +765,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-between text-stone-400">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-400/80">Kutubxona Katalogi</span>
                 <div className="p-2.5 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 group-hover:scale-110 transition-transform">
-                  <BookOpen className="w-5 h-5" />
+                  <BookText className="w-5 h-5" />
                 </div>
               </div>
               <div className="mt-4 space-y-1">
@@ -732,7 +811,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="flex items-center justify-between text-stone-400">
                 <span className="text-xs font-bold uppercase tracking-wider text-amber-300/80">Bo‘limlar & Sahifalar</span>
                 <div className="p-2.5 rounded-2xl bg-amber-500/15 text-amber-400 border border-amber-500/30 group-hover:scale-110 transition-transform">
-                  <Layers className="w-5 h-5" />
+                  <LayoutGrid className="w-5 h-5" />
                 </div>
               </div>
               <div className="mt-4 space-y-1">
@@ -1086,6 +1165,24 @@ export const AdminDashboard: React.FC = () => {
                                   <span>•</span>
                                   <span>{book.language}</span>
                                 </div>
+                                <div className="flex items-center gap-1 mt-1.5">
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#120B07] border border-amber-900/50 text-[10px] font-mono text-amber-300 font-semibold" title="Kitob unikal ID-si">
+                                    <span className="text-stone-500">ID:</span>
+                                    <span>{book.id}</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      navigator.clipboard.writeText(book.id);
+                                      showToast(`Kitob ID nusxalandi: ${book.id}`, 'info');
+                                    }}
+                                    className="p-1 text-stone-500 hover:text-amber-300 rounded hover:bg-amber-500/10 transition-colors"
+                                    title="Kitob ID-sini nusxalash"
+                                  >
+                                    <Copy className="w-2.5 h-2.5" />
+                                  </button>
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -1108,17 +1205,15 @@ export const AdminDashboard: React.FC = () => {
                           {/* Google Drive Status Link */}
                           <td className="py-3.5 px-4">
                             {hasDrive && parsed.isDrive ? (
-                              <a
-                                href={parsed.viewUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all"
-                                title="Google Drive faylini yangi oynada ochish"
+                              <button
+                                type="button"
+                                onClick={() => startReading(book)}
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-semibold hover:bg-emerald-500/20 transition-all cursor-pointer"
+                                title="Kitobni sayt ichida ko‘rish"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>Drive faol</span>
-                                <ExternalLink className="w-3 h-3 ml-0.5 opacity-70" />
-                              </a>
+                              </button>
                             ) : (
                               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-stone-900/80 text-stone-400 border border-stone-800 text-[11px]">
                                 <span>Standart PDF</span>
@@ -1143,9 +1238,9 @@ export const AdminDashboard: React.FC = () => {
 
                           {/* Reading Count */}
                           <td className="py-3.5 px-4 text-center">
-                            <div className="inline-flex items-center gap-1 text-stone-300 font-mono font-bold text-xs">
+                            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono font-bold text-xs shadow-sm">
                               <Eye className="w-3.5 h-3.5 text-amber-400" />
-                              <span>{book.views || 0}</span>
+                              <span>{(book.views || 0).toLocaleString()} marta</span>
                             </div>
                           </td>
 
@@ -1255,6 +1350,23 @@ export const AdminDashboard: React.FC = () => {
                         <p className="text-xs text-stone-400 truncate mt-0.5">
                           {book.authorName}
                         </p>
+                        <div className="flex items-center justify-between gap-1.5 mt-2 pt-1.5 border-t border-amber-950/60 text-[10px] font-mono">
+                          <span className="text-stone-500 truncate" title={book.id}>
+                            ID: <span className="text-amber-300 font-semibold">{book.id}</span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigator.clipboard.writeText(book.id);
+                              showToast(`Kitob ID nusxalandi: ${book.id}`, 'info');
+                            }}
+                            className="text-stone-500 hover:text-amber-300 p-0.5 transition-colors shrink-0"
+                            title="ID dan nusxa olish"
+                          >
+                            <Copy className="w-2.5 h-2.5" />
+                          </button>
+                        </div>
                         {book.subcategoryName && (
                           <div className="mt-1.5">
                             <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
@@ -1539,15 +1651,10 @@ export const AdminDashboard: React.FC = () => {
                               PDF Reader va yuklab olish moduli avtomatik tarzda bog‘landi.
                             </div>
                             <div className="pt-1">
-                              <a
-                                href={driveInfo.viewUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 underline hover:text-emerald-300"
-                              >
-                                <span>Havolani tekshirish (Google Driveda ochish)</span>
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
+                              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-400">
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Havola muvaffaqiyatli bog‘landi (Sayt ichida ochiladi)</span>
+                              </span>
                             </div>
                           </div>
                         </>
@@ -1563,7 +1670,34 @@ export const AdminDashboard: React.FC = () => {
                   )}
                 </div>
 
-                {/* 2. BOOK METADATA GRID */}
+                {/* AI BOOK ANALYSIS & INSPECTOR CARD (GEMINI 3.8 FLASH) */}
+                <AiBookAnalysisCard
+                  googleDriveUrl={formData.googleDriveUrl}
+                  categories={categories}
+                  onApplyAnalysis={handleApplyAiAnalysis}
+                  showToast={showToast}
+                  currentTitle={formData.title}
+                />
+
+                {/* 2. UNIQUE BOOK ID SECTION */}
+                <div className="p-4 rounded-2xl bg-[#1C140E] border border-amber-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 font-mono font-bold text-xs shrink-0">
+                      #ID
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-stone-200">Unikal Kitob Identifikatori (ID)</div>
+                      <div className="text-[11px] text-stone-400">
+                        Har bir kitob yuklanganda individual ID biriktiriladi va ko‘rishlar soni Firestore bazasida aniq hisoblanadi.
+                      </div>
+                    </div>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 font-mono text-xs font-bold self-start sm:self-auto">
+                    <span>Avtomatik biriktiriladi</span>
+                  </div>
+                </div>
+
+                {/* 3. BOOK METADATA GRID */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Title */}
                   <div className="space-y-1.5 sm:col-span-2">
@@ -1892,9 +2026,20 @@ export const AdminDashboard: React.FC = () => {
                   className="w-full bg-[#1C140E] border border-amber-500/40 rounded-xl px-3 py-2.5 text-xs text-stone-100 focus:outline-none focus:border-amber-400 font-mono"
                 />
                 {editDriveInfo.isDrive && (
-                  <div className="text-[11px] text-emerald-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                    <span>Drive Fayl ID: {editDriveInfo.fileId}</span>
+                  <div className="flex items-center justify-between text-[11px]">
+                    <span className="text-emerald-400 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span>Drive Fayl ID: {editDriveInfo.fileId}</span>
+                    </span>
+                    <button
+                      type="button"
+                      disabled={isEditAnalyzing}
+                      onClick={handleReAnalyzeEditingBook}
+                      className="inline-flex items-center gap-1 text-amber-400 hover:text-amber-300 font-semibold px-2 py-0.5 rounded bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>{isEditAnalyzing ? 'AI tahlil qilmoqda...' : 'AI orqali qayta tahlil qilish'}</span>
+                    </button>
                   </div>
                 )}
               </div>

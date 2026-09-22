@@ -32,6 +32,7 @@ interface LibraryContextType {
   setActivePage: (page: ActivePage) => void;
   selectedBook: Book | null;
   openBookDetails: (book: Book) => void;
+  trackBookOpen: (bookId: string) => void;
   selectedCategory: Category | null;
   openCategoryPage: (category: Category | string, initialSubcategoryId?: string) => void;
   activeReadingBook: Book | null;
@@ -274,26 +275,30 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
-  const updateReadingProgress = (book: Book, page: number) => {
-    const validPage = Math.max(1, page);
-    const updated = StorageService.updateReadingProgress(book, validPage);
-    setReadingHistory(updated);
-    setActiveReadingPage(validPage);
-    StorageService.saveBookProgress(book.id, validPage, userId);
-    FirebaseService.saveUserProgress(userId, book.id, validPage, book.pages).catch(() => {});
+  const updateReadingProgress = (_book: Book, _page: number) => {
+    // Reading position tracking removed as requested
   };
 
-  const getBookSavedPage = (bookId: string): number => {
-    return StorageService.getBookProgress(bookId, userId);
+  const getBookSavedPage = (_bookId: string): number => {
+    return 1;
   };
 
-  const isBookRead = (bookId: string): boolean => {
-    return getBookSavedPage(bookId) > 1;
+  const isBookRead = (_bookId: string): boolean => {
+    return false;
+  };
+
+  const trackBookOpen = (bookId: string) => {
+    if (!bookId) return;
+    setBooks(prev => prev.map(b => b.id === bookId ? { ...b, views: (b.views || 0) + 1 } : b));
+    setSelectedBook(prev => prev && prev.id === bookId ? { ...prev, views: (prev.views || 0) + 1 } : prev);
+    StorageService.incrementBookViews(bookId);
+    FirebaseService.incrementBookViews(bookId).catch(() => {});
   };
 
   const openBookDetails = (book: Book) => {
     TelegramService.hapticImpact('light');
-    setSelectedBook(book);
+    trackBookOpen(book.id);
+    setSelectedBook({ ...book, views: (book.views || 0) + 1 });
     setActivePage('book-details');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -317,38 +322,14 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const startReading = (book: Book, startPage?: number) => {
     TelegramService.hapticImpact('light');
-    setActiveReadingBook(book);
-
-    const savedProgress = StorageService.getBookProgress(book.id, userId);
-    const pageToUse = (typeof startPage === 'number' && startPage > 0)
-      ? startPage
-      : (savedProgress > 0 ? savedProgress : 1);
-
+    trackBookOpen(book.id);
+    setActiveReadingBook({ ...book, views: (book.views || 0) + 1 });
+    const pageToUse = (typeof startPage === 'number' && startPage > 0) ? startPage : 1;
     setActiveReadingPage(pageToUse);
-    const updated = StorageService.updateReadingProgress(book, pageToUse);
-    setReadingHistory(updated);
-    StorageService.saveBookProgress(book.id, pageToUse, userId);
-
-    // Also check cloud Firestore in case read on another device
-    FirebaseService.getUserProgress(userId, book.id).then(cloudPage => {
-      if (cloudPage && cloudPage > 0 && cloudPage !== pageToUse) {
-        setActiveReadingPage(cloudPage);
-        StorageService.saveBookProgress(book.id, cloudPage, userId);
-      }
-    }).catch(() => {});
   };
 
-  const closeReader = (overridePage?: number) => {
+  const closeReader = (_overridePage?: number) => {
     TelegramService.hapticSelection();
-    if (activeReadingBook) {
-      const finalPage = overridePage && overridePage > 0 ? overridePage : activeReadingPage;
-      if (finalPage > 0) {
-        StorageService.saveBookProgress(activeReadingBook.id, finalPage, userId);
-        const updated = StorageService.updateReadingProgress(activeReadingBook, finalPage);
-        setReadingHistory(updated);
-        FirebaseService.saveUserProgress(userId, activeReadingBook.id, finalPage, activeReadingBook.pages).catch(() => {});
-      }
-    }
     setActiveReadingBook(null);
   };
 
@@ -808,6 +789,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         setActivePage,
         selectedBook,
         openBookDetails,
+        trackBookOpen,
         selectedCategory,
         openCategoryPage,
         activeReadingBook,

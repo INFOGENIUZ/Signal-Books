@@ -2,18 +2,16 @@ import React from 'react';
 import { 
   Search, 
   ArrowRight, 
-  Flame, 
-  Clock, 
-  BookOpen, 
-  Headphones, 
-  TrendingUp,
-  Layers,
-  ChevronRight
+  TrendingUp, 
+  Sparkles, 
+  AudioLines, 
+  ChevronRight,
+  BookText
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { FeaturedBookCard } from '../components/books/FeaturedBookCard';
 import { BookCard } from '../components/books/BookCard';
-import { DailyQuoteAndReadingTracker } from '../components/home/DailyQuoteAndReadingTracker';
+import { BookShowcaseSlider } from '../components/home/BookShowcaseSlider';
 import { Book, AudioTrack } from '../types';
 
 export const HomePage: React.FC = () => {
@@ -24,8 +22,6 @@ export const HomePage: React.FC = () => {
     setSearchQuery, 
     setActivePage, 
     setSelectedCategoryFilter,
-    startReading, 
-    readingHistory,
     playAudio,
     isAdmin 
   } = useLibrary();
@@ -37,9 +33,6 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  // Unique authors count from real books
-  const uniqueAuthorsCount = new Set(books.map(b => b.authorName.trim()).filter(Boolean)).size;
-
   // Featured books
   const featuredBooks = books.filter(b => b.isFeatured).slice(0, 4);
   // New books
@@ -49,125 +42,55 @@ export const HomePage: React.FC = () => {
   // Top Categories (first 8)
   const popularCategories = categories.slice(0, 8);
 
-  // Latest reading history item
-  const recentHistoryItem = readingHistory.length > 0 ? readingHistory[0] : null;
-  const recentBook = recentHistoryItem ? books.find(b => b.id === recentHistoryItem.bookId) : null;
-
   return (
-    <div className="space-y-16 pb-12">
+    <div className="space-y-12 pb-12">
       {/* Hero Section */}
-      <section className="relative pt-6 sm:pt-10 overflow-hidden">
+      <section className="relative pt-4 sm:pt-8 overflow-hidden">
         {/* Ambient Glowing Background Blobs */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/12 rounded-full blur-3xl pointer-events-none -z-10" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none -z-10" />
         <div className="absolute top-20 right-10 w-80 h-80 bg-orange-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
         <div className="max-w-4xl mx-auto text-center px-4">
-          {/* Official Glowing Gold Logo Emblem */}
-          <div className="flex justify-center mb-5">
-            <div className="inline-flex p-1.5 sm:p-2 rounded-2xl bg-[#080604] border border-amber-500/50 shadow-[0_0_30px_rgba(245,158,11,0.35)]">
-              <img src="/signal-books-icon.svg" alt="Signal Books" className="w-14 h-14 sm:w-16 sm:h-16 object-contain hover:scale-105 transition-transform" />
-            </div>
-          </div>
-
           {/* Main Heading */}
-          <h1 className="font-serif-title text-3xl sm:text-5xl md:text-6xl font-extrabold text-stone-100 tracking-tight leading-[1.18] mb-6">
+          <h1 className="font-serif-title text-3xl sm:text-5xl md:text-6xl font-extrabold text-stone-100 tracking-tight leading-[1.18] mb-3">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-orange-400 to-amber-300 drop-shadow-[0_0_25px_rgba(245,158,11,0.35)]">
               Signal Books
             </span>{' '}
-            kutubxonasiga xush kelibsiz
+            kutubxonasi
           </h1>
 
           {/* Description */}
-          <p className="text-stone-300 text-sm sm:text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-            Sevimli asarlaringizni toping, mutolaa qiling, tinglang va cheksiz bilim olamiga sayohat qiling.
+          <p className="text-stone-300 text-sm sm:text-base max-w-xl mx-auto mb-6 leading-relaxed">
+            Elektron kitoblar, darsliklar va audio asarlar to‘plami
           </p>
 
           {/* Large Search Bar */}
-          <form onSubmit={handleHeroSearch} className="max-w-2xl mx-auto relative mb-8">
+          <form onSubmit={handleHeroSearch} className="max-w-2xl mx-auto relative mb-5">
             <div className="relative flex items-center rounded-2xl bg-[#18130E]/90 border border-amber-500/30 p-1 sm:p-1.5 shadow-[0_0_30px_rgba(245,158,11,0.2)] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/30 transition-all">
               <Search className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500/60 ml-2.5 sm:ml-3 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Kitob, muallif yoki janr..."
+                placeholder="Kitob nomi, muallif yoki mavzu bo‘yicha qidirish..."
                 className="w-full px-2.5 sm:px-3 py-2 sm:py-3 bg-transparent text-xs sm:text-base text-stone-100 placeholder-stone-500 outline-none"
               />
               <button
                 type="submit"
-                className="px-3 sm:px-5 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all shrink-0 hover:scale-[1.02]"
+                className="px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all shrink-0 hover:scale-[1.02]"
               >
                 <span>Qidirish</span>
                 <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-950" />
               </button>
             </div>
           </form>
-
-          {/* Real Statistics counter badges */}
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 pt-2">
-            <div className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl font-extrabold text-stone-100">{books.length}</span>
-              <span className="text-xs text-stone-400 font-medium">kitob</span>
-            </div>
-            <div className="h-6 w-[1px] bg-stone-800 hidden sm:block" />
-            <div className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl font-extrabold text-amber-400">{uniqueAuthorsCount}</span>
-              <span className="text-xs text-stone-400 font-medium">muallif</span>
-            </div>
-            <div className="h-6 w-[1px] bg-stone-800 hidden sm:block" />
-            <div className="flex flex-col items-center">
-              <span className="text-xl sm:text-2xl font-extrabold text-orange-400">{categories.length}</span>
-              <span className="text-xs text-stone-400 font-medium">kategoriya</span>
-            </div>
-          </div>
         </div>
       </section>
 
-      {/* Continue Reading Section (if user has active history) */}
-      {recentHistoryItem && recentBook && (
-        <section className="px-4 max-w-7xl mx-auto">
-          <div className="p-4 sm:p-6 rounded-2xl bg-gradient-to-r from-[#1A130D] to-[#120E0A] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
-            <div className="flex items-center gap-4 w-full sm:w-auto">
-              <img 
-                src={recentHistoryItem.coverUrl} 
-                alt={recentHistoryItem.bookTitle} 
-                className="w-14 h-20 rounded-xl object-cover shadow-md shrink-0 ring-1 ring-amber-500/40"
-              />
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <Clock className="w-3.5 h-3.5 text-amber-400" />
-                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">
-                    O‘qishni davom ettirish
-                  </span>
-                </div>
-                <h4 className="text-sm sm:text-base font-bold text-stone-100 truncate">
-                  {recentHistoryItem.bookTitle}
-                </h4>
-                <p className="text-xs text-stone-400">
-                  {recentHistoryItem.authorName} • {recentHistoryItem.currentPage} / {recentHistoryItem.totalPages} sahifa ({recentHistoryItem.progressPercent}%)
-                </p>
-                <div className="w-full max-w-xs h-1.5 rounded-full bg-stone-900 mt-2 overflow-hidden border border-amber-950/60">
-                  <div 
-                    className="h-full bg-gradient-to-r from-amber-500 to-orange-500"
-                    style={{ width: `${recentHistoryItem.progressPercent}%` }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={() => startReading(recentBook, recentHistoryItem.currentPage)}
-              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all shrink-0"
-            >
-              <BookOpen className="w-4 h-4 text-stone-950" />
-              <span>Davom ettirish</span>
-            </button>
-          </div>
-        </section>
+      {/* Dynamic Animated Book Showcase Slider (Auto-slides every 3-4s, gesture drag/swipe) */}
+      {books.length > 0 && (
+        <BookShowcaseSlider books={books} />
       )}
-
-      {/* Interactive Reading Hub & Daily Inspiration Section */}
-      <DailyQuoteAndReadingTracker />
 
       {/* When books are empty: Pristine clean state */}
       {books.length === 0 ? (
@@ -213,11 +136,11 @@ export const HomePage: React.FC = () => {
               <div className="flex items-end justify-between mb-6">
                 <div>
                   <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                    <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
+                    <TrendingUp className="w-4 h-4 text-amber-400" />
                     <span>Eng sara to‘plam</span>
                   </div>
                   <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">
-                    🔥 Mashhur kitoblar
+                    Mashhur kitoblar
                   </h2>
                   <p className="text-xs sm:text-sm text-stone-400 mt-1">
                     Kitobxonlar orasida eng ko‘p o‘qilayotgan durdona asarlar
@@ -247,11 +170,11 @@ export const HomePage: React.FC = () => {
               <div className="flex items-end justify-between mb-6">
                 <div>
                   <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                    <Clock className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 text-amber-400" />
                     <span>Yangi nashrlar</span>
                   </div>
                   <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">
-                    🆕 Yangi qo‘shilgan kitoblar
+                    Yangi qo‘shilgan kitoblar
                   </h2>
                   <p className="text-xs sm:text-sm text-stone-400 mt-1">
                     Kutubxonamizga yaqinda yuklangan sara asarlar va darsliklar
@@ -284,11 +207,11 @@ export const HomePage: React.FC = () => {
                 <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 mb-8">
                   <div>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-xs font-bold mb-2">
-                      <Headphones className="w-3.5 h-3.5" />
+                      <AudioLines className="w-3.5 h-3.5" />
                       <span>AUDIO KUTUBXONA</span>
                     </div>
                     <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">
-                      🎧 Sevimli kitoblaringizni tinglang
+                      Sevimli kitoblaringizni tinglang
                     </h2>
                     <p className="text-xs sm:text-sm text-stone-300 max-w-lg mt-1">
                       Ovozli formatdagi sara kitoblardan rohatlaning.
@@ -343,7 +266,7 @@ export const HomePage: React.FC = () => {
                         className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 flex items-center justify-center shrink-0 shadow-md hover:scale-110 transition-transform"
                         title="Tinglash"
                       >
-                        <Headphones className="w-4 h-4" />
+                        <AudioLines className="w-4 h-4" />
                       </button>
                     </div>
                   ))}

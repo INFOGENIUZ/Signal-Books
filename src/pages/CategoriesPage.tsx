@@ -1,12 +1,12 @@
 import React, { useState, useMemo } from 'react';
-import { Layers, Search, BookOpen, X, GraduationCap, Compass } from 'lucide-react';
+import { LayoutGrid, Search, BookText, X, GraduationCap, Compass, Binary, Briefcase } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { CategoryCard } from '../components/categories/CategoryCard';
 
 type CategoryGroupFilter = 'all' | 'school' | 'literature' | 'stem' | 'business';
 
 export const CategoriesPage: React.FC = () => {
-  const { categories, books } = useLibrary();
+  const { categories } = useLibrary();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGroup, setSelectedGroup] = useState<CategoryGroupFilter>('all');
 
@@ -100,27 +100,32 @@ export const CategoriesPage: React.FC = () => {
             )}
           </div>
 
-          {/* Category Tabs */}
+          {/* Category Tabs with Modern Icons */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
             {[
-              { id: 'all', label: 'Barchasi' },
-              { id: 'school', label: 'Maktab' },
-              { id: 'literature', label: 'Adabiyot' },
-              { id: 'stem', label: 'Fan & IT' },
-              { id: 'business', label: 'Biznes & Boshqa' },
-            ].map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setSelectedGroup(tab.id as CategoryGroupFilter)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                  selectedGroup === tab.id
-                    ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
-                    : 'bg-[#0E0A07]/80 text-stone-400 hover:text-amber-300 hover:bg-[#1A120B] border border-stone-800/80'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+              { id: 'all', label: 'Barchasi', icon: LayoutGrid },
+              { id: 'school', label: 'Maktab', icon: GraduationCap },
+              { id: 'literature', label: 'Adabiyot', icon: BookText },
+              { id: 'stem', label: 'Fan & IT', icon: Binary },
+              { id: 'business', label: 'Biznes', icon: Briefcase },
+            ].map(tab => {
+              const TabIcon = tab.icon;
+              const isActive = selectedGroup === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedGroup(tab.id as CategoryGroupFilter)}
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
+                      : 'bg-[#0E0A07]/80 text-stone-400 hover:text-amber-300 hover:bg-[#1A120B] border border-stone-800/80'
+                  }`}
+                >
+                  <TabIcon className="w-3.5 h-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

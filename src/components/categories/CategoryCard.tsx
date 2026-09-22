@@ -1,22 +1,22 @@
 import React from 'react';
 import { 
-  BookOpen, 
+  BookText, 
   GraduationCap, 
-  Laptop, 
-  Divide, 
-  Globe, 
-  Microscope, 
-  Smile, 
+  Code2, 
+  Binary, 
+  Compass, 
+  Atom, 
+  Sparkles, 
   Languages, 
-  Brain, 
+  BrainCircuit, 
   Briefcase, 
   Scale, 
   Palette,
   ArrowUpRight,
-  HeartPulse,
+  Activity,
   History,
-  Music,
-  Folder
+  Music2,
+  FolderGit2
 } from 'lucide-react';
 import { Category } from '../../types';
 import { useLibrary } from '../../context/LibraryContext';
@@ -26,28 +26,38 @@ interface CategoryCardProps {
 }
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
-  BookOpen,
+  BookOpen: BookText,
+  BookText,
   GraduationCap,
-  Laptop,
-  Divide,
-  Globe,
-  Microscope,
-  Smile,
+  Laptop: Code2,
+  Code2,
+  Divide: Binary,
+  Binary,
+  Globe: Compass,
+  Compass,
+  Microscope: Atom,
+  Atom,
+  Smile: Sparkles,
+  Sparkles,
   Languages,
-  Brain,
+  Brain: BrainCircuit,
+  BrainCircuit,
   Briefcase,
   Scale,
   Palette,
-  HeartPulse,
+  HeartPulse: Activity,
+  Activity,
   History,
-  Music,
-  Folder,
+  Music: Music2,
+  Music2,
+  Folder: FolderGit2,
+  FolderGit2,
 };
 
 export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
   const { openCategoryPage, books } = useLibrary();
 
-  const IconComponent = ICON_MAP[category.iconName] || BookOpen;
+  const IconComponent = ICON_MAP[category.iconName] || BookText;
   const realBooksCount = books.filter(b => b.categoryId === category.id || b.categoryName === category.name).length;
   const categoryColor = category.color || '#F59E0B';
 
@@ -158,7 +168,7 @@ export const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
           /* Single category without subcategories: clean explore prompt */
           <div className="flex items-center justify-between text-xs text-stone-400 group-hover:text-amber-300 transition-colors">
             <span className="flex items-center gap-1.5 text-[11px] text-stone-400">
-              <BookOpen className="w-3.5 h-3.5 text-amber-400/70" />
+              <BookText className="w-3.5 h-3.5 text-amber-400/70" />
               <span>Katalogdagi adabiyotlar</span>
             </span>
             <span className="text-[11px] font-semibold text-amber-400/90 flex items-center gap-0.5">

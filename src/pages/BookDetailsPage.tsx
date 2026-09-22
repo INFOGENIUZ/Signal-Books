@@ -35,8 +35,7 @@ export const BookDetailsPage: React.FC = () => {
     books, 
     showToast,
     isAdmin,
-    deleteBook,
-    getBookSavedPage 
+    deleteBook
   } = useLibrary();
 
   const [activeTab, setActiveTab] = useState<'about' | 'chapters' | 'author'>('about');
@@ -59,13 +58,12 @@ export const BookDetailsPage: React.FC = () => {
 
   const isFav = favorites.includes(selectedBook.id);
   const driveInfo = parseGoogleDriveUrl(selectedBook.googleDriveUrl || selectedBook.pdfUrl);
-  const savedPage = getBookSavedPage(selectedBook.id);
 
   // Sync Telegram native MainButton
   React.useEffect(() => {
     TelegramService.setMainButton({
       show: true,
-      text: savedPage > 1 ? `Mutolaani davom ettirish (${savedPage}-bet)` : "Kitobni o'qish (PDF)",
+      text: "Kitobni o'qish (PDF)",
       color: '#F59E0B',
       onClick: () => startReading(selectedBook)
     });
@@ -73,7 +71,7 @@ export const BookDetailsPage: React.FC = () => {
     return () => {
       TelegramService.setMainButton({ show: false });
     };
-  }, [selectedBook.id, savedPage]);
+  }, [selectedBook.id]);
 
   // Related books
   const relatedBooks = books
@@ -86,13 +84,20 @@ export const BookDetailsPage: React.FC = () => {
     setTimeout(() => {
       setIsDownloading(false);
       const element = document.createElement('a');
-      if (driveInfo.isDrive && driveInfo.downloadUrl) {
-        element.href = driveInfo.downloadUrl;
+      if (driveInfo.isDrive && driveInfo.fileId) {
+        element.href = `/api/drive-pdf?id=${driveInfo.fileId}&download=true&filename=${encodeURIComponent(selectedBook.title + '.pdf')}`;
+      } else if (selectedBook.pdfUrl) {
+        const checkDrive = parseGoogleDriveUrl(selectedBook.pdfUrl);
+        if (checkDrive.isDrive && checkDrive.fileId) {
+          element.href = `/api/drive-pdf?id=${checkDrive.fileId}&download=true&filename=${encodeURIComponent(selectedBook.title + '.pdf')}`;
+        } else {
+          element.href = selectedBook.pdfUrl;
+        }
       } else {
         const file = new Blob([`Kitob: ${selectedBook.title}\nMuallif: ${selectedBook.authorName}\nSignal Books raqamli kutubxonasi tomonidan taqdim etildi.`], { type: 'text/plain' });
         element.href = URL.createObjectURL(file);
       }
-      element.download = `${selectedBook.slug}.pdf`;
+      element.download = `${selectedBook.slug || 'kitob'}.pdf`;
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
@@ -192,12 +197,6 @@ export const BookDetailsPage: React.FC = () => {
             <p className="text-base sm:text-lg text-stone-300 font-medium">
               Muallif: <span className="text-amber-400 hover:underline cursor-pointer">{selectedBook.authorName}</span>
             </p>
-
-            {savedPage > 1 && (
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-amber-500/15 border border-amber-500/30 text-xs font-semibold text-amber-300 mt-2">
-                <span>📖 Siz oxirgi marta {savedPage}-sahifasigacha o‘qigansiz</span>
-              </div>
-            )}
           </div>
 
           {/* Action Buttons */}
@@ -207,7 +206,7 @@ export const BookDetailsPage: React.FC = () => {
               className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95"
             >
               <BookOpen className="w-5 h-5 text-stone-950" />
-              <span>{savedPage > 1 ? `Mutolaani davom ettirish (${savedPage}-bet)` : 'PDF mutolaa qilish'}</span>
+              <span>PDF mutolaa qilish</span>
             </button>
 
             {selectedBook.hasAudio && (

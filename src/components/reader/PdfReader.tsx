@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { 
   ArrowLeft, 
   ChevronLeft, 
@@ -26,7 +26,7 @@ import {
   Keyboard,
   X,
   Sliders,
-  Sparkles as _NoAiSparkles // excluded
+  ExternalLink
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { StorageService } from '../../services/storageService';
@@ -59,47 +59,48 @@ export const PdfReader: React.FC = () => {
   const isBookFavorite = favorites.includes(activeReadingBook.id);
   const driveInfo = parseGoogleDriveUrl(activeReadingBook.googleDriveUrl || activeReadingBook.pdfUrl);
 
-  // Initialize page from storage if user has read this book before
-  const initialSavedPage = useMemo(() => {
-    const fromStorage = StorageService.getBookProgress(activeReadingBook.id, userId);
-    if (fromStorage && fromStorage > 0) return fromStorage;
-    return (activeReadingPage && activeReadingPage > 0) ? activeReadingPage : 1;
-  }, [activeReadingBook.id, userId, activeReadingPage]);
-
-  // Core State
-  const [page, setPage] = useState<number>(initialSavedPage);
+  // Core State - always starts from page 1
+  const [page, setPage] = useState<number>(1);
   const [zoomScale, setZoomScale] = useState<number>(100);
   const [isFullscreen, setIsFullscreen] = useState<boolean>(false);
   const [copiedLink, setCopiedLink] = useState<boolean>(false);
   const [iframeLoaded, setIframeLoaded] = useState<boolean>(false);
-  const [pageInputValue, setPageInputValue] = useState<string>(String(initialSavedPage));
+  const [pageInputValue, setPageInputValue] = useState<string>('1');
   const [justBookmarked, setJustBookmarked] = useState<boolean>(false);
   const [loadTimeout, setLoadTimeout] = useState<boolean>(false);
 
   // Creative Modern Features:
   // 1. Reading Ambiance Theme
   const [ambianceTheme, setAmbianceTheme] = useState<ReaderAmbianceTheme>('obsidian');
-  // 2. Focus Mode (Distraction-Free Immersion)
+  // 2. Eye Comfort Filter (Night blue light relief)
+  const [isEyeComfort, setIsEyeComfort] = useState<boolean>(false);
+  // 3. Focus Mode (Distraction-Free Immersion)
   const [isFocusMode, setIsFocusMode] = useState<boolean>(false);
-  // 3. Live Reading Session Timer (minutes)
+  // 4. Live Reading Session Timer (minutes)
   const [sessionMinutes, setSessionMinutes] = useState<number>(0);
-  // 4. Quick Page Scrubber Slider Popover
+  // 5. Quick Page Scrubber Slider Popover
   const [showScrubber, setShowScrubber] = useState<boolean>(false);
-  // 5. Keyboard Shortcuts Help Modal
+  // 6. Keyboard Shortcuts Help Modal
   const [showShortcuts, setShowShortcuts] = useState<boolean>(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Loading timeout tracker
+  // Synchronize state when book changes (always page 1)
+  useEffect(() => {
+    setPage(1);
+    setPageInputValue('1');
+  }, [activeReadingBook.id]);
+
+  // Loading timeout tracker: only triggered once per book, NOT on every page turn!
   useEffect(() => {
     setLoadTimeout(false);
     setIframeLoaded(false);
     const timer = setTimeout(() => {
       setLoadTimeout(true);
-    }, 4500);
+    }, 4000);
     return () => clearTimeout(timer);
-  }, [activeReadingBook.id, page]);
+  }, [activeReadingBook.id]);
 
   // Session Minutes Clock
   useEffect(() => {
@@ -108,23 +109,6 @@ export const PdfReader: React.FC = () => {
     }, 60000);
     return () => clearInterval(interval);
   }, []);
-
-  // Inform user on first load if resumed from previous page
-  useEffect(() => {
-    if (initialSavedPage > 1) {
-      showToast(`Mutolaa saqlangan ${initialSavedPage}-sahifadan davom ettirilmoqda 📖`, 'info');
-    }
-  }, [activeReadingBook.id, initialSavedPage]);
-
-  // Keep storage and context synchronized on unmount
-  useEffect(() => {
-    return () => {
-      if (activeReadingBook && page > 0) {
-        StorageService.saveBookProgress(activeReadingBook.id, page, userId);
-        StorageService.updateReadingProgress(activeReadingBook, page);
-      }
-    };
-  }, [activeReadingBook, page, userId]);
 
   // Fullscreen change event
   useEffect(() => {
@@ -190,33 +174,87 @@ export const PdfReader: React.FC = () => {
   let downloadPdfUrl = '';
 
   if (driveInfo.isDrive && driveInfo.fileId) {
-    embedPdfUrl = `https://drive.google.com/file/d/${driveInfo.fileId}/preview#page=${page}`;
-    downloadPdfUrl = driveInfo.downloadUrl;
+    embedPdfUrl = `https://drive.google.com/file/d/${driveInfo.fileId}/preview`;
+    downloadPdfUrl = `/api/drive-pdf?id=${driveInfo.fileId}&download=true&filename=${encodeURIComponent(activeReadingBook.title + '.pdf')}`;
   } else if (activeReadingBook.pdfUrl) {
-    embedPdfUrl = `${activeReadingBook.pdfUrl}#page=${page}&view=FitH`;
-    downloadPdfUrl = activeReadingBook.pdfUrl;
+    const checkDrive = parseGoogleDriveUrl(activeReadingBook.pdfUrl);
+    if (checkDrive.isDrive && checkDrive.fileId) {
+      embedPdfUrl = `https://drive.google.com/file/d/${checkDrive.fileId}/preview`;
+      downloadPdfUrl = `/api/drive-pdf?id=${checkDrive.fileId}&download=true&filename=${encodeURIComponent(activeReadingBook.title + '.pdf')}`;
+    } else {
+      embedPdfUrl = `${activeReadingBook.pdfUrl}#page=${page}&view=FitH`;
+      downloadPdfUrl = activeReadingBook.pdfUrl;
+    }
   }
 
-  // Zoom handlers
-  const zoomIn = () => {
-    setZoomScale(prev => Math.min(250, prev + 25));
-  };
+  // Visual ambiance & Eye comfort filter
+  const ambianceFilter = useMemo(() => {
+    let filter = '';
+    if (ambianceTheme === 'sepia') {
+      filter += 'sepia(0.35) contrast(0.96) brightness(0.95) ';
+    } else if (ambianceTheme === 'oled') {
+      filter += 'contrast(1.06) brightness(0.92) ';
+    }
+    if (isEyeComfort) {
+      filter += 'sepia(0.28) hue-rotate(-10deg) brightness(0.92) ';
+    }
+    return filter.trim() || undefined;
+  }, [ambianceTheme, isEyeComfort]);
 
-  const zoomOut = () => {
-    setZoomScale(prev => Math.max(75, prev - 25));
-  };
+  // Zoom handlers - exactly 1% per click as requested: "har bosilganda 1%dan yaqinlashtirsin pdfni"
+  const zoomIn = useCallback((delta = 1) => {
+    setZoomScale(prev => Math.min(300, prev + delta));
+    TelegramService.hapticImpact('light');
+  }, []);
 
-  const resetZoom = () => {
+  const zoomOut = useCallback((delta = 1) => {
+    setZoomScale(prev => Math.max(50, prev - delta));
+    TelegramService.hapticImpact('light');
+  }, []);
+
+  const resetZoom = useCallback(() => {
     setZoomScale(100);
-  };
+    TelegramService.hapticImpact('medium');
+    showToast('Masshtab 100% ga qaytarildi', 'info');
+  }, [showToast]);
 
-  // Safe page change handler that persists immediately
+  // Hold-to-zoom interval timer for smooth continuous 1% zooming when button is held
+  const zoomHoldIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const zoomHoldTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const stopZoomHold = useCallback(() => {
+    if (zoomHoldTimeoutRef.current) {
+      clearTimeout(zoomHoldTimeoutRef.current);
+      zoomHoldTimeoutRef.current = null;
+    }
+    if (zoomHoldIntervalRef.current) {
+      clearInterval(zoomHoldIntervalRef.current);
+      zoomHoldIntervalRef.current = null;
+    }
+  }, []);
+
+  const startZoomHold = useCallback((direction: 'in' | 'out') => {
+    stopZoomHold();
+    zoomHoldTimeoutRef.current = setTimeout(() => {
+      zoomHoldIntervalRef.current = setInterval(() => {
+        if (direction === 'in') {
+          setZoomScale(prev => Math.min(300, prev + 1));
+        } else {
+          setZoomScale(prev => Math.max(50, prev - 1));
+        }
+      }, 40);
+    }, 220);
+  }, [stopZoomHold]);
+
+  useEffect(() => {
+    return () => stopZoomHold();
+  }, [stopZoomHold]);
+
+  // Safe page change handler
   const changePage = (newPage: number) => {
     const valid = Math.max(1, Math.min(totalPages, newPage));
     setPage(valid);
     setPageInputValue(String(valid));
-    StorageService.saveBookProgress(activeReadingBook.id, valid, userId);
-    updateReadingProgress(activeReadingBook, valid);
     TelegramService.hapticImpact('light');
   };
 
@@ -232,19 +270,15 @@ export const PdfReader: React.FC = () => {
 
   // Dedicated Bookmark Handler
   const handleBookmarkCurrentPage = () => {
-    StorageService.saveBookProgress(activeReadingBook.id, page, userId);
-    updateReadingProgress(activeReadingBook, page);
     TelegramService.hapticSuccess();
     setJustBookmarked(true);
-    showToast(`Xatcho‘p qo‘yildi: ${page}-sahifa eslab qolindi 🔖`, 'success');
+    showToast(`${page}-sahifa belgilandi 🔖`, 'success');
     setTimeout(() => setJustBookmarked(false), 2500);
   };
 
   // Safe Close Handler
   const handleClose = () => {
-    StorageService.saveBookProgress(activeReadingBook.id, page, userId);
-    updateReadingProgress(activeReadingBook, page);
-    closeReader(page);
+    closeReader();
   };
 
   const toggleFullscreen = () => {
@@ -289,8 +323,6 @@ export const PdfReader: React.FC = () => {
     if (downloadPdfUrl) {
       const link = document.createElement('a');
       link.href = downloadPdfUrl;
-      link.target = '_blank';
-      link.rel = 'noreferrer';
       link.download = `${activeReadingBook.slug || 'kitob'}.pdf`;
       document.body.appendChild(link);
       link.click();
@@ -335,20 +367,12 @@ export const PdfReader: React.FC = () => {
       {/* 1. TOP CREATIVE HUD TOOLBAR (Collapsible in Focus Mode) */}
       {!isFocusMode && (
         <header className={`h-16 px-3 sm:px-6 flex items-center justify-between border-b ${currentThemeStyles.header} backdrop-blur-2xl z-30 shrink-0 gap-3 shadow-xl transition-all duration-300 relative`}>
-          {/* Subtle Golden Reading Progress Line along bottom border */}
-          <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-stone-800/50 overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-amber-600 via-amber-400 to-yellow-300 shadow-[0_0_12px_rgba(245,158,11,0.8)] transition-all duration-300 ease-out"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-
           {/* Left: Back button & Book Metadata */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               onClick={handleClose}
               className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-950/40 hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 border border-amber-900/60 hover:border-amber-500/50 text-xs font-semibold transition-all shrink-0 hover:scale-[1.02] active:scale-95"
-              title="Kutubxonaga qaytish (Sahifa avtomatik saqlanadi)"
+              title="Kutubxonaga qaytish"
             >
               <ArrowLeft className="w-4 h-4 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
               <span className="hidden sm:inline">Orqaga</span>
@@ -369,20 +393,14 @@ export const PdfReader: React.FC = () => {
                 </h1>
                 <div className="flex items-center gap-2 text-[11px] text-stone-400 truncate">
                   <span className="truncate">{activeReadingBook.authorName}</span>
-                  <span className="hidden sm:inline text-amber-500/50">•</span>
-                  <span className="hidden sm:inline-flex items-center gap-1 text-emerald-400 font-medium">
-                    <Check className="w-3 h-3" />
-                    <span>{page}-bet saqlangan</span>
-                  </span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Center: Interactive Page Jumper & Audio Companion */}
-          <div className="flex items-center gap-2 sm:gap-3">
-            {/* Audio companion pill (with animated equalizer bars when active) */}
-            {hasAudioTrack && (
+          {/* Center: Audio Companion (if available) */}
+          {hasAudioTrack && (
+            <div className="flex items-center gap-2">
               <button
                 onClick={handleAudioCompanionToggle}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md shrink-0 ${
@@ -408,127 +426,11 @@ export const PdfReader: React.FC = () => {
                   </>
                 )}
               </button>
-            )}
-
-            {/* Desktop Page Navigation Pill */}
-            <div className="hidden sm:flex items-center gap-1.5 bg-[#18110B]/90 px-3 py-1.5 rounded-xl border border-amber-900/60 shadow-inner">
-              <button
-                type="button"
-                onClick={() => changePage(page - 10)}
-                disabled={page <= 1}
-                className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-amber-950/50 hover:bg-amber-500/20 text-stone-400 hover:text-amber-300 disabled:opacity-25 transition-colors"
-                title="10 sahifa orqaga"
-              >
-                -10
-              </button>
-
-              <button
-                onClick={() => changePage(page - 1)}
-                disabled={page <= 1}
-                className="p-1 rounded-lg hover:bg-amber-500/20 text-stone-400 hover:text-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                title="Oldingi sahifa"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              <form onSubmit={handlePageInputSubmit} className="flex items-center gap-1">
-                <input 
-                  type="text"
-                  value={pageInputValue}
-                  onChange={(e) => setPageInputValue(e.target.value)}
-                  onBlur={handlePageInputSubmit}
-                  className="w-10 text-center bg-black/50 text-amber-300 text-xs font-mono font-bold rounded-md py-0.5 border border-amber-900/60 focus:border-amber-500 focus:outline-none"
-                  title="Sahifa raqamini yozing va Enter bosing"
-                />
-                <span className="text-xs text-stone-500 font-mono">/ {totalPages}</span>
-              </form>
-
-              <button
-                onClick={() => changePage(page + 1)}
-                disabled={page >= totalPages}
-                className="p-1 rounded-lg hover:bg-amber-500/20 text-stone-400 hover:text-amber-300 disabled:opacity-30 disabled:pointer-events-none transition-colors"
-                title="Keyingi sahifa"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => changePage(page + 10)}
-                disabled={page >= totalPages}
-                className="px-1.5 py-0.5 text-[10px] font-mono rounded bg-amber-950/50 hover:bg-amber-500/20 text-stone-400 hover:text-amber-300 disabled:opacity-25 transition-colors"
-                title="10 sahifa oldinga"
-              >
-                +10
-              </button>
-
-              {/* Scrubber Toggle */}
-              <button
-                onClick={() => setShowScrubber(prev => !prev)}
-                className="ml-1 p-1 rounded-md text-stone-400 hover:text-amber-300 hover:bg-amber-500/20 transition-colors"
-                title="Tezkor varaqlash slayderi"
-              >
-                <Sliders className="w-3.5 h-3.5" />
-              </button>
-
-              <div className="ml-1 pl-2 border-l border-amber-950/90 text-[10px] font-mono text-amber-400 font-bold">
-                {progressPercent}%
-              </div>
             </div>
+          )}
 
-            {/* Bookmark Pin Button */}
-            <button
-              onClick={handleBookmarkCurrentPage}
-              className={`flex items-center gap-1.5 px-2.5 py-1.5 sm:px-3 sm:py-1.5 rounded-xl border text-xs font-semibold shadow-sm transition-all active:scale-95 ${
-                justBookmarked
-                  ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400'
-                  : 'bg-amber-500/15 hover:bg-amber-500/25 border-amber-500/40 text-amber-300'
-              }`}
-              title="Hozirgi sahifani xatcho‘p qilib belgilash"
-            >
-              <Bookmark className={`w-3.5 h-3.5 ${justBookmarked ? 'fill-emerald-400 text-emerald-400' : 'fill-amber-400 text-amber-400'}`} />
-              <span className="hidden xs:inline">{justBookmarked ? 'Eslab qolindi!' : `${page}-betni saqlash`}</span>
-            </button>
-          </div>
-
-          {/* Right Tools: Theme, Focus Mode, Zoom, Download, Fullscreen */}
+          {/* Right Tools: Focus Mode, Zoom, Download, Fullscreen */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Reading Ambiance Theme Switcher */}
-            <div className="hidden lg:flex items-center gap-1 bg-[#18110B]/90 p-1 rounded-xl border border-amber-900/60">
-              <button
-                onClick={() => setAmbianceTheme('obsidian')}
-                className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
-                  ambianceTheme === 'obsidian'
-                    ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
-                    : 'text-stone-400 hover:text-stone-200'
-                }`}
-                title="Obsidian Tun rejimi"
-              >
-                Tun
-              </button>
-              <button
-                onClick={() => setAmbianceTheme('sepia')}
-                className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
-                  ambianceTheme === 'sepia'
-                    ? 'bg-amber-800/40 text-amber-200 font-bold border border-amber-700/50'
-                    : 'text-stone-400 hover:text-stone-200'
-                }`}
-                title="Sepia Pergament rejimi"
-              >
-                Sepia
-              </button>
-              <button
-                onClick={() => setAmbianceTheme('oled')}
-                className={`px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
-                  ambianceTheme === 'oled'
-                    ? 'bg-stone-800 text-stone-100 font-bold border border-stone-600'
-                    : 'text-stone-400 hover:text-stone-200'
-                }`}
-                title="OLED Sof Qora rejimi"
-              >
-                OLED
-              </button>
-            </div>
 
             {/* Focus Mode (Distraction-free toggle) */}
             <button
@@ -540,26 +442,37 @@ export const PdfReader: React.FC = () => {
               <span className="hidden xl:inline">Fokus</span>
             </button>
 
-            {/* Zoom controls */}
+            {/* Desktop Zoom controls (1% precision) */}
             <div className="hidden md:flex items-center gap-1 bg-[#18110B]/90 px-1 py-1 rounded-xl border border-amber-900/60 shadow-inner">
               <button
-                onClick={zoomOut}
-                className="p-1.5 rounded-lg hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 active:scale-90 transition-all"
-                title="Kichiklashtirish"
+                type="button"
+                onClick={() => zoomOut(1)}
+                onMouseDown={() => startZoomHold('out')}
+                onMouseUp={stopZoomHold}
+                onMouseLeave={stopZoomHold}
+                className="p-1.5 rounded-lg hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 active:scale-90 transition-all select-none"
+                title="Kichiklashtirish (-1%)"
+                aria-label="Kichiklashtirish (-1%)"
               >
                 <ZoomOut className="w-3.5 h-3.5" />
               </button>
               <button 
+                type="button"
                 onClick={resetZoom}
-                className="text-[11px] font-mono text-amber-300 px-1.5 py-0.5 hover:bg-amber-500/10 rounded font-bold"
+                className="text-[11px] font-mono text-amber-300 px-1.5 py-0.5 hover:bg-amber-500/10 rounded font-bold min-w-[46px] text-center transition-colors"
                 title="Asl o‘lchamga qaytarish (100%)"
               >
                 {zoomScale}%
               </button>
               <button 
-                onClick={zoomIn}
-                className="p-1.5 rounded-lg hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 active:scale-90 transition-all"
-                title="Kattalashtirish"
+                type="button"
+                onClick={() => zoomIn(1)}
+                onMouseDown={() => startZoomHold('in')}
+                onMouseUp={stopZoomHold}
+                onMouseLeave={stopZoomHold}
+                className="p-1.5 rounded-lg hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 active:scale-90 transition-all select-none"
+                title="Kattalashtirish (+1%)"
+                aria-label="Kattalashtirish (+1%)"
               >
                 <ZoomIn className="w-3.5 h-3.5" />
               </button>
@@ -607,32 +520,6 @@ export const PdfReader: React.FC = () => {
             </button>
           </div>
         </header>
-      )}
-
-      {/* 2. POP-DOWN QUICK PAGE SCRUBBER SLIDER */}
-      {showScrubber && !isFocusMode && (
-        <div className="bg-[#160F0A] border-b border-amber-900/60 px-6 py-3 flex items-center gap-4 animate-fade-in z-20 shadow-md">
-          <span className="text-xs text-stone-400 whitespace-nowrap font-mono">
-            Sahifa tanlash:
-          </span>
-          <input 
-            type="range"
-            min={1}
-            max={totalPages}
-            value={page}
-            onChange={(e) => changePage(parseInt(e.target.value, 10))}
-            className="flex-1 accent-amber-500 cursor-pointer h-1.5 bg-stone-800 rounded-lg"
-          />
-          <span className="text-xs font-mono font-bold text-amber-400 min-w-[60px] text-right">
-            {page} / {totalPages}
-          </span>
-          <button
-            onClick={() => setShowScrubber(false)}
-            className="p-1 text-stone-400 hover:text-stone-200"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
       )}
 
       {/* 3. MAIN PDF VIEWER CANVAS */}
@@ -693,38 +580,51 @@ export const PdfReader: React.FC = () => {
             {/* Embedded Zoomable Iframe Container */}
             <div 
               ref={scrollAreaRef}
-              className="w-full h-full overflow-hidden flex items-start justify-center"
+              className="w-full h-full overflow-auto flex items-start justify-center select-none"
             >
               <div 
-                className="transition-transform duration-200 ease-out origin-top-left flex items-center justify-center shrink-0 w-full h-full"
+                className="transition-transform duration-100 ease-out origin-top flex items-center justify-center shrink-0 w-full h-full"
                 style={{ 
                   transform: zoomScale !== 100 ? `scale(${zoomScale / 100})` : undefined,
                   transformOrigin: 'top center',
-                  width: zoomScale > 100 ? `${zoomScale}%` : '100%',
-                  height: zoomScale > 100 ? `${zoomScale}%` : '100%',
-                  minWidth: '100%',
-                  minHeight: '100%'
+                  width: '100%',
+                  height: '100%',
+                  minWidth: zoomScale > 100 ? `${zoomScale}%` : '100%',
+                  minHeight: zoomScale > 100 ? `${zoomScale}%` : '100%'
                 }}
               >
                 <div 
-                  className="w-full h-full relative overflow-hidden"
-                  style={{ backgroundColor: currentThemeStyles.iframeBg }}
+                  className="w-full h-full relative"
+                  style={{ 
+                    backgroundColor: currentThemeStyles.iframeBg,
+                    filter: ambianceFilter 
+                  }}
                 >
                   <iframe
-                    key={`${activeReadingBook.id}-${page}-${ambianceTheme}`}
+                    key={activeReadingBook.id}
                     src={embedPdfUrl}
                     title={`${activeReadingBook.title} - To'liq PDF`}
-                    className="w-full border-0"
+                    className="w-full h-full border-0"
                     style={{
                       backgroundColor: currentThemeStyles.iframeBg,
-                      height: driveInfo.isDrive ? 'calc(100% + 56px)' : '100%',
-                      marginTop: driveInfo.isDrive ? '-56px' : '0px',
                     }}
-                    allow="autoplay; fullscreen"
                     sandbox="allow-scripts allow-same-origin allow-forms"
+                    allow="autoplay; fullscreen"
                     referrerPolicy="no-referrer"
                     onLoad={() => setIframeLoaded(true)}
                   />
+
+                  {/* Shield over Google Drive's top-right pop-out button to block accidental external redirects */}
+                  {driveInfo.isDrive && (
+                    <div 
+                      className="absolute top-0 right-0 w-28 h-16 z-20 pointer-events-auto cursor-default" 
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                      title="Kitob mutolaa maydoni"
+                    />
+                  )}
                 </div>
               </div>
             </div>
@@ -773,42 +673,50 @@ export const PdfReader: React.FC = () => {
             {!isFocusMode && (
               <div className="sm:hidden absolute bottom-4 inset-x-3 z-30 flex flex-col gap-2">
                 <div className="flex items-center justify-between bg-[#150F0A]/95 border border-amber-500/40 px-3 py-2 rounded-2xl backdrop-blur-2xl shadow-2xl">
-                  {/* Left: Quick Page Flipping */}
-                  <div className="flex items-center gap-1">
+                  {/* Left: Mobile Zoom Control Unit (Exact 1% step per click + hold-to-zoom) */}
+                  <div className="flex items-center gap-1.5 bg-[#1C140E]/90 p-1 rounded-xl border border-amber-500/30 shadow-inner">
+                    {/* Zoom Out (-1%) */}
                     <button
-                      onClick={() => changePage(page - 10)}
-                      disabled={page <= 1}
-                      className="px-2 py-1 text-[10px] font-mono rounded-lg bg-amber-950/60 text-stone-400 disabled:opacity-25 active:scale-95"
-                      title="10 sahifa orqaga"
+                      type="button"
+                      onClick={() => zoomOut(1)}
+                      onMouseDown={() => startZoomHold('out')}
+                      onMouseUp={stopZoomHold}
+                      onMouseLeave={stopZoomHold}
+                      onTouchStart={() => startZoomHold('out')}
+                      onTouchEnd={stopZoomHold}
+                      disabled={zoomScale <= 50}
+                      className="w-8 h-8 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
+                      title="Uzoqlashtirish (-1%)"
+                      aria-label="Uzoqlashtirish (-1%)"
                     >
-                      -10
+                      <ZoomOut className="w-4 h-4" />
                     </button>
+
+                    {/* Zoom Percentage Badge (Click to reset to 100%) */}
                     <button
-                      onClick={() => changePage(page - 1)}
-                      disabled={page <= 1}
-                      className="p-1.5 rounded-lg bg-amber-950/60 text-amber-300 disabled:opacity-25 active:scale-95"
-                      title="Oldingi bet"
+                      type="button"
+                      onClick={resetZoom}
+                      className="px-2.5 py-1 rounded-lg bg-black/60 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-mono font-bold text-xs min-w-[56px] text-center transition-all active:scale-95 shadow-sm"
+                      title="100% asliga qaytarish"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      {zoomScale}%
                     </button>
-                    <span className="text-[11px] font-mono font-bold text-amber-300 px-1.5">
-                      {page}/{totalPages}
-                    </span>
+
+                    {/* Zoom In (+1%) */}
                     <button
-                      onClick={() => changePage(page + 1)}
-                      disabled={page >= totalPages}
-                      className="p-1.5 rounded-lg bg-amber-950/60 text-amber-300 disabled:opacity-25 active:scale-95"
-                      title="Keyingi bet"
+                      type="button"
+                      onClick={() => zoomIn(1)}
+                      onMouseDown={() => startZoomHold('in')}
+                      onMouseUp={stopZoomHold}
+                      onMouseLeave={stopZoomHold}
+                      onTouchStart={() => startZoomHold('in')}
+                      onTouchEnd={stopZoomHold}
+                      disabled={zoomScale >= 300}
+                      className="w-8 h-8 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
+                      title="Yaqinlashtirish (+1%)"
+                      aria-label="Yaqinlashtirish (+1%)"
                     >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => changePage(page + 10)}
-                      disabled={page >= totalPages}
-                      className="px-2 py-1 text-[10px] font-mono rounded-lg bg-amber-950/60 text-stone-400 disabled:opacity-25 active:scale-95"
-                      title="10 sahifa oldinga"
-                    >
-                      +10
+                      <ZoomIn className="w-4 h-4" />
                     </button>
                   </div>
 

@@ -17,7 +17,7 @@ export const HistoryPage: React.FC = () => {
           O‘qish tarixi
         </h1>
         <p className="text-xs sm:text-sm text-stone-400 mt-1">
-          Yaqinda ochilgan kitoblaringiz va to‘xtagan sahifalaringiz
+          Yaqinda ochilgan va o‘qilgan kitoblaringiz ro‘yxati
         </p>
       </div>
 
@@ -48,21 +48,8 @@ export const HistoryPage: React.FC = () => {
                       {item.authorName}
                     </p>
 
-                    {/* Progress Bar in warm Amber & Gold */}
-                    <div className="mt-3 flex items-center gap-3">
-                      <div className="w-36 sm:w-56 h-2 rounded-full bg-[#251A12] overflow-hidden border border-amber-950">
-                        <div 
-                          className="h-full bg-gradient-to-r from-amber-500 to-orange-500 rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(245,158,11,0.5)]"
-                          style={{ width: `${Math.min(100, item.progressPercent || 0)}%` }}
-                        />
-                      </div>
-                      <span className="text-xs font-mono font-bold text-amber-400">
-                        {item.progressPercent}%
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mt-2 text-[11px] text-stone-400">
-                      <span className="font-mono">{item.currentPage} / {item.totalPages} sahifa</span>
+                    <div className="flex items-center gap-3 mt-3 text-[11px] text-stone-400">
+                      <span className="font-mono">{item.totalPages} sahifa</span>
                       <span>•</span>
                       <span className="flex items-center gap-1">
                         <Clock className="w-3 h-3 text-amber-500/80" />
@@ -74,11 +61,11 @@ export const HistoryPage: React.FC = () => {
 
                 {currentBook && (
                   <button
-                    onClick={() => startReading(currentBook, item.currentPage)}
+                    onClick={() => startReading(currentBook, 1)}
                     className="w-full sm:w-auto px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.35)] transition-all shrink-0 hover:scale-[1.02] active:scale-95"
                   >
                     <BookOpen className="w-4 h-4 text-stone-950" />
-                    <span>Davom ettirish</span>
+                    <span>Kitobni o‘qish</span>
                   </button>
                 )}
               </div>

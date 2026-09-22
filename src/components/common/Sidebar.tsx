@@ -1,10 +1,10 @@
 import React from 'react';
 import { 
-  Home, 
-  BookOpen, 
-  Layers, 
-  Headphones, 
-  Star, 
+  Compass, 
+  BookText, 
+  LayoutGrid, 
+  AudioLines, 
+  BookmarkCheck, 
   History, 
   Info, 
   ShieldCheck, 
@@ -42,11 +42,11 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
     icon: React.ComponentType<{ className?: string }>;
     badge?: number | string;
   }> = [
-    { id: 'home', label: 'Bosh sahifa', icon: Home },
-    { id: 'books', label: 'Barcha kitoblar', icon: BookOpen },
-    { id: 'categories', label: 'Kategoriyalar', icon: Layers },
-    { id: 'audio', label: 'Audio kitoblar', icon: Headphones },
-    { id: 'favorites', label: 'Sevimlilar', icon: Star, badge: favorites.length > 0 ? favorites.length : undefined },
+    { id: 'home', label: 'Bosh sahifa', icon: Compass },
+    { id: 'books', label: 'Barcha kitoblar', icon: BookText },
+    { id: 'categories', label: 'Kategoriyalar', icon: LayoutGrid },
+    { id: 'audio', label: 'Audio kitoblar', icon: AudioLines },
+    { id: 'favorites', label: 'Sevimlilar', icon: BookmarkCheck, badge: favorites.length > 0 ? favorites.length : undefined },
     { id: 'history', label: 'O‘qish tarixi', icon: History, badge: readingHistory.length > 0 ? readingHistory.length : undefined },
     { id: 'about', label: 'Biz haqimizda', icon: Info },
   ];

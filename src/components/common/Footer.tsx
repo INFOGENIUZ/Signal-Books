@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookMarked, Send, Instagram, Youtube, Heart } from 'lucide-react';
+import { BookMarked, Send, Instagram, Youtube, Heart, ExternalLink } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { ActivePage } from '../../types';
 
@@ -110,11 +110,6 @@ export const Footer: React.FC = () => {
                 </button>
               </li>
               <li>
-                <button onClick={() => handleNav('admin')} className="text-stone-400 hover:text-amber-400 transition-colors flex items-center gap-1.5">
-                  <span>Admin boshqaruvi</span>
-                </button>
-              </li>
-              <li>
                 <span className="text-stone-500">Maxfiylik siyosati</span>
               </li>
               <li>
@@ -124,10 +119,31 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        <div className="pt-6 border-t border-amber-950/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
+        <div className="pt-6 border-t border-amber-950/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <div>
             © 2026 Signal Books. Barcha huquqlar himoyalangan.
           </div>
+
+          {/* Dasturchi Muxiddin (@signalbooks_admin) */}
+          <a
+            href="https://t.me/signalbooks_admin"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#18110B] hover:bg-[#251A10] border border-amber-500/40 hover:border-amber-400 text-stone-200 hover:text-amber-300 transition-all group shadow-md shadow-black/40 hover:scale-105 active:scale-95"
+            title="Dasturchi Muxiddin bilan bog‘lanish: @signalbooks_admin"
+          >
+            <span className="w-5 h-5 rounded-full bg-[#229ED9]/20 border border-[#229ED9]/50 flex items-center justify-center text-[#229ED9] group-hover:bg-[#229ED9]/30 transition-colors">
+              <Send className="w-2.5 h-2.5 fill-current" />
+            </span>
+            <span className="text-xs font-medium text-stone-300">
+              Dasturchi: <span className="font-bold text-amber-300 group-hover:underline">Muxiddin</span>
+            </span>
+            <span className="text-xs font-mono text-amber-300 bg-amber-950/80 px-2 py-0.5 rounded-md border border-amber-800/60 shadow-inner">
+              @signalbooks_admin
+            </span>
+            <ExternalLink className="w-3.5 h-3.5 text-stone-500 group-hover:text-amber-400 transition-colors" />
+          </a>
+
           <div className="flex items-center gap-1 text-stone-400">
             <span>Kitobxonlar muhabbati bilan yaratilgan</span>
             <Heart className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />

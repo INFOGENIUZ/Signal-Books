@@ -90,6 +90,18 @@ export const StorageService = {
     return filtered;
   },
 
+  incrementBookViews(bookId: string): number {
+    const books = this.getBooks();
+    const index = books.findIndex(b => b.id === bookId);
+    let newViews = 1;
+    if (index !== -1) {
+      newViews = (books[index].views || 0) + 1;
+      books[index].views = newViews;
+      this.saveBooks(books);
+    }
+    return newViews;
+  },
+
   getCategories(): Category[] {
     try {
       const data = safeGet(STORAGE_KEYS.CATEGORIES);
@@ -206,9 +218,9 @@ export const StorageService = {
     }
   },
 
-  updateReadingProgress(book: Book, page: number): ReadingHistoryItem[] {
+  updateReadingProgress(book: Book, page: number, userId?: string): ReadingHistoryItem[] {
     const validPage = Math.max(1, page);
-    this.saveBookProgress(book.id, validPage);
+    this.saveBookProgress(book.id, validPage, userId);
 
     const history = this.getReadingHistory();
     const totalPages = book.pages || 1;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Eye, Bookmark, BookOpen, Headphones } from 'lucide-react';
+import { Star, Eye, Bookmark, BookText, AudioLines } from 'lucide-react';
 import { Book } from '../../types';
 import { useLibrary } from '../../context/LibraryContext';
 
@@ -28,7 +28,7 @@ export const FeaturedBookCard: React.FC<FeaturedBookCardProps> = ({ book }) => {
         
         {book.hasAudio && (
           <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-stone-950/80 text-amber-300 backdrop-blur-md border border-amber-500/30 flex items-center gap-1">
-            <Headphones className="w-2.5 h-2.5 text-amber-400" />
+            <AudioLines className="w-2.5 h-2.5 text-amber-400" />
             <span>Audio</span>
           </span>
         )}
@@ -103,7 +103,7 @@ export const FeaturedBookCard: React.FC<FeaturedBookCardProps> = ({ book }) => {
             onClick={() => startReading(book)}
             className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.35)] transition-all hover:scale-[1.02]"
           >
-            <BookOpen className="w-3.5 h-3.5 text-stone-950" />
+            <BookText className="w-3.5 h-3.5 text-stone-950" />
             <span>O‘qish</span>
           </button>
         </div>

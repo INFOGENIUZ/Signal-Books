@@ -1,10 +1,10 @@
 import React from 'react';
 import { 
-  Home, 
-  BookOpen, 
-  Layers, 
-  Headphones, 
-  Star 
+  Compass, 
+  BookText, 
+  LayoutGrid, 
+  AudioLines, 
+  BookmarkCheck 
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { ActivePage } from '../../types';
@@ -28,14 +28,14 @@ export const MobileBottomNav: React.FC = () => {
     badge?: number;
     action?: () => void;
   }> = [
-    { id: 'home', label: 'Asosiy', icon: Home },
-    { id: 'books', label: 'Kitoblar', icon: BookOpen },
-    { id: 'categories', label: 'Bo‘limlar', icon: Layers },
-    { id: 'audio', label: 'Audio', icon: Headphones },
+    { id: 'home', label: 'Asosiy', icon: Compass },
+    { id: 'books', label: 'Kitoblar', icon: BookText },
+    { id: 'categories', label: 'Bo‘limlar', icon: LayoutGrid },
+    { id: 'audio', label: 'Audio', icon: AudioLines },
     { 
       id: 'favorites', 
       label: 'Sevimlilar', 
-      icon: Star, 
+      icon: BookmarkCheck, 
       badge: favorites.length > 0 ? favorites.length : undefined 
     }
   ];
