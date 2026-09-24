@@ -27,6 +27,7 @@ import {
   getDirectAudioUrl,
   getGoogleDrivePreviewUrl 
 } from '../../utils/googleDrive';
+import { AudioStorageService } from '../../services/audioStorage';
 
 interface AdminAudioBookUploadCardProps {
   categories: Category[];
@@ -51,20 +52,20 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
   // Book Metadata
   const [title, setTitle] = useState('');
   const [authorName, setAuthorName] = useState('');
-  const [narrator, setNarrator] = useState('Afzal Rafiqov');
+  const [narrator, setNarrator] = useState('');
   const [categoryId, setCategoryId] = useState(categories[0]?.id || 'cat-1');
   const [subcategoryId, setSubcategoryId] = useState('');
   const [language, setLanguage] = useState<BookLanguage>('O‘zbekcha');
   const [publicationYear, setPublicationYear] = useState<number>(new Date().getFullYear());
   const [description, setDescription] = useState('');
-  const [audioDuration, setAudioDuration] = useState('3 soat 15 daqiqa');
+  const [audioDuration, setAudioDuration] = useState('');
   
   // Audio sources
   const [googleDriveUrl, setGoogleDriveUrl] = useState('');
   const [directAudioUrl, setDirectAudioUrl] = useState('');
   const [selectedAudioFile, setSelectedAudioFile] = useState<File | null>(null);
   const [localAudioBlobUrl, setLocalAudioBlobUrl] = useState<string | null>(null);
-  const [fileSizeText, setFileSizeText] = useState('35 MB');
+  const [fileSizeText, setFileSizeText] = useState('');
 
   // Cover image settings
   const [coverType, setCoverType] = useState<'auto' | 'custom'>('auto');
@@ -111,7 +112,7 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
     return generateAudioBookCover(
       title || 'Audio Kitob Nomi',
       authorName || 'Asar Muallifi',
-      narrator || 'Professional suxandon',
+      narrator.trim() || '',
       targetCat?.name || 'Badiiy adabiyot',
       publicationYear,
       coverStyle
@@ -246,7 +247,7 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
   };
 
   // Submit Handler
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title.trim() || !authorName.trim()) {
@@ -265,7 +266,14 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
 
     // Resolve final persistent audio URL
     let finalAudioUrl = effectiveAudioUrl;
-    if (sourceType === 'drive' && driveInfo.isDrive && driveInfo.fileId) {
+    if (sourceType === 'file' && selectedAudioFile) {
+      try {
+        const audioId = `audio-${Date.now()}`;
+        finalAudioUrl = await AudioStorageService.saveAudioFile(selectedAudioFile, audioId);
+      } catch (err) {
+        console.warn('Audio storage error:', err);
+      }
+    } else if (sourceType === 'drive' && driveInfo.isDrive && driveInfo.fileId) {
       finalAudioUrl = `/api/drive-audio?id=${driveInfo.fileId}`;
     }
 
@@ -273,15 +281,15 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
       title: title.trim(),
       authorId: matchedAuthor ? matchedAuthor.id : 'auth-custom',
       authorName: authorName.trim(),
-      narrator: narrator.trim() || 'Professional suxandon',
+      narrator: narrator.trim() || undefined,
       categoryId: targetCategory ? targetCategory.id : 'cat-1',
       categoryName: targetCategory ? targetCategory.name : 'Badiiy adabiyot',
       subcategoryId: targetSubCategory?.id,
       subcategoryName: targetSubCategory?.name,
-      description: description.trim() || `«${title}» — ${authorName} qalamiga mansub sara asarning to‘liq audio kitob varianti. Suxandon ${narrator || 'mutaxassis'} tomonidan maromiga yetkazib ijro etilgan.`,
+      description: description.trim() || `«${title}» — ${authorName} qalamiga mansub sara asarning to‘liq audio kitob varianti.${narrator.trim() ? ` Suxandon: ${narrator.trim()}.` : ''}`,
       coverUrl: effectiveCoverUrl,
       audioUrl: finalAudioUrl,
-      audioDuration: audioDuration.trim() || '3 soat 20 daqiqa',
+      audioDuration: audioDuration.trim() || undefined,
       hasAudio: true,
       googleDriveUrl: sourceType === 'drive' ? googleDriveUrl.trim() : undefined,
       pdfUrl: '#',

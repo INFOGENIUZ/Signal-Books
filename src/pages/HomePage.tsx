@@ -6,7 +6,8 @@ import {
   Sparkles, 
   AudioLines, 
   ChevronRight,
-  BookText
+  BookText,
+  Pause
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { FeaturedBookCard } from '../components/books/FeaturedBookCard';
@@ -23,6 +24,9 @@ export const HomePage: React.FC = () => {
     setActivePage, 
     setSelectedCategoryFilter,
     playAudio,
+    togglePlayAudio,
+    activeAudioTrack,
+    isPlayingAudio,
     isAdmin 
   } = useLibrary();
 
@@ -252,22 +256,41 @@ export const HomePage: React.FC = () => {
 
                       <button
                         onClick={() => {
+                          if (activeAudioTrack?.bookId === book.id) {
+                            togglePlayAudio();
+                            return;
+                          }
+                          let estSec = 0;
+                          if (book.audioDuration) {
+                            const hrs = book.audioDuration.match(/(\d+)\s*soat/);
+                            const mins = book.audioDuration.match(/(\d+)\s*daq/);
+                            if (hrs && hrs[1]) estSec += parseInt(hrs[1]) * 3600;
+                            if (mins && mins[1]) estSec += parseInt(mins[1]) * 60;
+                          }
                           const track: AudioTrack = {
                             id: `track-${book.id}`,
                             bookId: book.id,
                             title: book.title,
                             author: book.authorName,
                             coverUrl: book.coverUrl,
-                            duration: 1800,
-                            audioSrc: book.audioUrl,
-                            narrator: book.narrator || 'Professional suxandon'
+                            duration: estSec,
+                            audioSrc: book.audioUrl || book.googleDriveUrl,
+                            narrator: book.narrator?.trim() && book.narrator !== 'Professional suxandon' ? book.narrator : undefined
                           };
                           playAudio(track);
                         }}
-                        className="w-8 h-8 rounded-full bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 flex items-center justify-center shrink-0 shadow-md hover:scale-110 transition-transform"
-                        title="Tinglash"
+                        className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-md hover:scale-110 transition-transform cursor-pointer ${
+                          activeAudioTrack?.bookId === book.id && isPlayingAudio
+                            ? 'bg-amber-400 text-stone-950 shadow-[0_0_12px_#f59e0b]'
+                            : 'bg-gradient-to-tr from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950'
+                        }`}
+                        title={activeAudioTrack?.bookId === book.id && isPlayingAudio ? "Pauza" : "Tinglash"}
                       >
-                        <AudioLines className="w-4 h-4" />
+                        {activeAudioTrack?.bookId === book.id && isPlayingAudio ? (
+                          <Pause className="w-4 h-4 fill-current" />
+                        ) : (
+                          <AudioLines className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   ))}

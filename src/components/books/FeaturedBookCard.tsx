@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Eye, Bookmark, BookText, AudioLines } from 'lucide-react';
+import { Star, Eye, Bookmark, BookText, AudioLines, Headphones } from 'lucide-react';
 import { Book } from '../../types';
 import { useLibrary } from '../../context/LibraryContext';
 
@@ -10,6 +10,10 @@ interface FeaturedBookCardProps {
 export const FeaturedBookCard: React.FC<FeaturedBookCardProps> = ({ book }) => {
   const { openBookDetails, startReading, favorites, toggleFavorite } = useLibrary();
   const isFav = favorites.includes(book.id);
+  const isAudioOnly = Boolean(
+    book.hasAudio && 
+    (!book.pdfUrl || book.pdfUrl === '#' || book.pages === 0 || (book.format && book.format.length === 1 && book.format[0] === 'AUDIO'))
+  );
 
   return (
     <div className="group relative flex flex-col sm:flex-row items-stretch rounded-2xl bg-[#16110D]/90 border border-amber-950/80 p-4 hover:border-amber-500/50 hover:bg-[#1F1711] hover:shadow-[0_15px_35px_-10px_rgba(245,158,11,0.22)] transition-all duration-300">
@@ -95,16 +99,31 @@ export const FeaturedBookCard: React.FC<FeaturedBookCardProps> = ({ book }) => {
               <span>{book.views.toLocaleString()}</span>
             </span>
             <span className="font-mono text-stone-500">
-              {book.pages} bet
+              {isAudioOnly ? (book.audioDuration || 'Audio kitob') : `${book.pages} bet`}
             </span>
           </div>
 
           <button
-            onClick={() => startReading(book)}
-            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.35)] transition-all hover:scale-[1.02]"
+            onClick={() => {
+              if (isAudioOnly) {
+                openBookDetails(book);
+              } else {
+                startReading(book);
+              }
+            }}
+            className="px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.35)] transition-all hover:scale-[1.02] cursor-pointer"
           >
-            <BookText className="w-3.5 h-3.5 text-stone-950" />
-            <span>O‘qish</span>
+            {isAudioOnly ? (
+              <>
+                <Headphones className="w-3.5 h-3.5 text-stone-950" />
+                <span>Tinglash</span>
+              </>
+            ) : (
+              <>
+                <BookText className="w-3.5 h-3.5 text-stone-950" />
+                <span>O‘qish</span>
+              </>
+            )}
           </button>
         </div>
       </div>

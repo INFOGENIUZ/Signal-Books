@@ -129,7 +129,7 @@ export function generateFirstPageBookCover(
 export function generateAudioBookCover(
   title: string,
   author: string,
-  narrator: string = 'Professional suxandon',
+  narrator: string = '',
   category: string = 'Badiiy adabiyot',
   year: number = new Date().getFullYear(),
   style: 'gold' | 'emerald' | 'sapphire' | 'violet' = 'gold'
@@ -155,7 +155,7 @@ export function generateAudioBookCover(
     }
   });
 
-  const safeNarrator = (narrator || 'Professional suxandon').replace(/[<>&"']/g, '');
+  const safeNarrator = (narrator && narrator !== 'Professional suxandon' ? narrator : '').replace(/[<>&"']/g, '');
   const safeCategory = (category || 'Ovozli kutubxona').replace(/[<>&"']/g, '');
 
   // Word wrap title into 1-3 lines cleanly without foreignObject
@@ -311,10 +311,10 @@ export function generateAudioBookCover(
       ${safeAuthor}
     </text>
 
-    <!-- Narrator Badge -->
+    <!-- Narrator or Category Badge -->
     <rect x="180" y="660" width="440" height="44" rx="22" fill="${p.badgeBg}" stroke="url(#primaryGrad)" stroke-width="1.2" />
     <text x="400" y="688" text-anchor="middle" fill="${p.accent2}" font-size="13.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" letter-spacing="0.4">
-      Ovoz beruvchi: <tspan fill="#ffffff" font-weight="700">${safeNarrator}</tspan>
+      ${safeNarrator ? `Ovoz beruvchi: <tspan fill="#ffffff" font-weight="700">${safeNarrator}</tspan>` : `<tspan fill="#ffffff" font-weight="700">${safeCategory} • Audio Kitob</tspan>`}
     </text>
 
     <!-- Bottom Footer Tag -->

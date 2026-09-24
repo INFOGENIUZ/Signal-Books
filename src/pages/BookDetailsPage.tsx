@@ -33,6 +33,9 @@ export const BookDetailsPage: React.FC = () => {
     favorites, 
     toggleFavorite, 
     playAudio,
+    togglePlayAudio,
+    activeAudioTrack,
+    isPlayingAudio,
     books, 
     showToast,
     isAdmin,
@@ -59,22 +62,58 @@ export const BookDetailsPage: React.FC = () => {
   }
 
   const isFav = favorites.includes(selectedBook.id);
+  const audioSrc = selectedBook.audioUrl || selectedBook.googleDriveUrl;
   const driveInfo = parseGoogleDriveUrl(selectedBook.googleDriveUrl || selectedBook.pdfUrl || selectedBook.audioUrl);
-  const isAudioOnly = selectedBook.hasAudio && (!selectedBook.pdfUrl || selectedBook.pdfUrl === '#' || selectedBook.pages === 0);
+  const driveAudioInfo = parseGoogleDriveUrl(audioSrc || '');
+  const drivePdfInfo = parseGoogleDriveUrl(selectedBook.pdfUrl || '');
+
+  // Check if book has audio enabled or format includes AUDIO
+  const hasAudio = Boolean(
+    selectedBook.hasAudio || 
+    Boolean(selectedBook.audioUrl) || 
+    Boolean(selectedBook.format?.includes('AUDIO'))
+  );
+
+  // Check whether book has a genuine, distinct PDF file (not a placeholder '#', not the same audio file)
+  const isSameFileAsAudio = Boolean(
+    (driveAudioInfo.isDrive && drivePdfInfo.isDrive && driveAudioInfo.fileId && drivePdfInfo.fileId && driveAudioInfo.fileId === drivePdfInfo.fileId) ||
+    (selectedBook.pdfUrl && audioSrc && selectedBook.pdfUrl === audioSrc)
+  );
+
+  const hasRealPdf = Boolean(
+    selectedBook.pdfUrl &&
+    selectedBook.pdfUrl !== '#' &&
+    selectedBook.pdfUrl.trim() !== '' &&
+    !isSameFileAsAudio &&
+    (!selectedBook.format || selectedBook.format.includes('PDF')) &&
+    (!hasAudio || (selectedBook.pages > 0 && selectedBook.format?.includes('PDF') && !selectedBook.format?.includes('AUDIO')))
+  );
+
+  // Audio-only book: audio is available and there is no separate PDF document
+  const isAudioOnly = hasAudio && !hasRealPdf;
 
   // Sync Telegram native MainButton
   React.useEffect(() => {
-    TelegramService.setMainButton({
-      show: true,
-      text: "Kitobni o'qish (PDF)",
-      color: '#F59E0B',
-      onClick: () => startReading(selectedBook)
-    });
+    if (isAudioOnly) {
+      TelegramService.setMainButton({
+        show: true,
+        text: activeAudioTrack?.bookId === selectedBook.id && isPlayingAudio ? "Audioni to'xtatish (Pauza)" : "Audioni tinglash",
+        color: '#F59E0B',
+        onClick: handlePlayAudio
+      });
+    } else {
+      TelegramService.setMainButton({
+        show: true,
+        text: "Kitobni o'qish (PDF)",
+        color: '#F59E0B',
+        onClick: () => startReading(selectedBook)
+      });
+    }
 
     return () => {
       TelegramService.setMainButton({ show: false });
     };
-  }, [selectedBook.id]);
+  }, [selectedBook.id, isAudioOnly, activeAudioTrack?.bookId, isPlayingAudio]);
 
   // Related books
   const relatedBooks = books
@@ -108,16 +147,67 @@ export const BookDetailsPage: React.FC = () => {
     }, 600);
   };
 
+  const handleAudioDownload = () => {
+    const audioLink = selectedBook.audioUrl || selectedBook.googleDriveUrl || '';
+    if (!audioLink) {
+      showToast('Audio fayl manzili topilmadi', 'error');
+      return;
+    }
+
+    setIsDownloading(true);
+    showToast(`«${selectedBook.title}» audio fayli yuklanmoqda...`, 'info');
+
+    setTimeout(() => {
+      setIsDownloading(false);
+      const driveAudio = parseGoogleDriveUrl(audioLink);
+
+      if (driveAudio.isDrive && driveAudio.fileId) {
+        // Direct Google Drive download link
+        const driveDownloadUrl = `https://drive.google.com/uc?export=download&id=${driveAudio.fileId}`;
+        const a = document.createElement('a');
+        a.href = driveDownloadUrl;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } else {
+        const filename = `${selectedBook.title.replace(/[\\/:*?"<>|]/g, '_') || 'audio'}.mp3`;
+        const a = document.createElement('a');
+        a.href = audioLink;
+        a.download = filename;
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      }
+      showToast(`«${selectedBook.title}» audio kitobini yuklab olish boshlandi! 🎧`, 'success');
+    }, 400);
+  };
+
   const handlePlayAudio = () => {
+    if (!selectedBook) return;
+    if (activeAudioTrack?.bookId === selectedBook.id) {
+      togglePlayAudio();
+      return;
+    }
+    let estSec = 0;
+    if (selectedBook.audioDuration) {
+      const hrs = selectedBook.audioDuration.match(/(\d+)\s*soat/);
+      const mins = selectedBook.audioDuration.match(/(\d+)\s*daq/);
+      if (hrs && hrs[1]) estSec += parseInt(hrs[1]) * 3600;
+      if (mins && mins[1]) estSec += parseInt(mins[1]) * 60;
+    }
     const track: AudioTrack = {
       id: `audio-${selectedBook.id}`,
       bookId: selectedBook.id,
       title: selectedBook.title,
       author: selectedBook.authorName,
       coverUrl: selectedBook.coverUrl,
-      duration: 1800,
-      audioSrc: selectedBook.audioUrl,
-      narrator: selectedBook.narrator || 'Professional suxandon'
+      duration: estSec,
+      audioSrc: selectedBook.audioUrl || selectedBook.googleDriveUrl,
+      narrator: selectedBook.narrator?.trim() && selectedBook.narrator !== 'Professional suxandon' ? selectedBook.narrator : undefined
     };
     playAudio(track);
   };
@@ -206,26 +296,25 @@ export const BookDetailsPage: React.FC = () => {
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
             {isAudioOnly ? (
-              // Audio-only book: Primary CTA is Audio
+              // Audio-only book: Primary CTA is Audio, Secondary is Audio download
               <>
                 <button
                   onClick={handlePlayAudio}
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
                   <Headphones className="w-5 h-5 text-stone-950" />
-                  <span>Audioni tinglash</span>
+                  <span>{activeAudioTrack?.bookId === selectedBook.id && isPlayingAudio ? 'Pauza' : 'Audioni tinglash'}</span>
                 </button>
 
-                {driveInfo.isDrive && driveInfo.fileId && (
-                  <button
-                    onClick={() => setShowDriveEmbedModal(true)}
-                    className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
-                    title="Google Drive rasmiy audio pleyeri"
-                  >
-                    <HardDrive className="w-4 h-4 text-amber-400" />
-                    <span>Drive pleyerida tinglash</span>
-                  </button>
-                )}
+                <button
+                  onClick={handleAudioDownload}
+                  disabled={isDownloading}
+                  className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
+                  title="Audioni qurilmaga yuklab olish"
+                >
+                  <Download className="w-4 h-4 text-amber-400" />
+                  <span>{isDownloading ? 'Yuklanmoqda...' : 'Audioni yuklab olish'}</span>
+                </button>
               </>
             ) : (
               // Standard or Hybrid Book
@@ -239,13 +328,25 @@ export const BookDetailsPage: React.FC = () => {
                 </button>
 
                 {selectedBook.hasAudio && (
-                  <button
-                    onClick={handlePlayAudio}
-                    className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
-                  >
-                    <Headphones className="w-4 h-4 text-amber-400" />
-                    <span>Audioni tinglash</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={handlePlayAudio}
+                      className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                    >
+                      <Headphones className="w-4 h-4 text-amber-400" />
+                      <span>{activeAudioTrack?.bookId === selectedBook.id && isPlayingAudio ? 'Pauza' : 'Audioni tinglash'}</span>
+                    </button>
+
+                    <button
+                      onClick={handleAudioDownload}
+                      disabled={isDownloading}
+                      className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
+                      title="Audioni yuklab olish"
+                    >
+                      <Download className="w-4 h-4 text-amber-400" />
+                      <span>Audioni yuklab olish</span>
+                    </button>
+                  </>
                 )}
 
                 <button

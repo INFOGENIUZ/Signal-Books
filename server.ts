@@ -458,11 +458,19 @@ app.get('/api/drive-audio', async (req, res) => {
     res.setHeader('Access-Control-Expose-Headers', 'Content-Range, Content-Length, Accept-Ranges');
     res.setHeader('Accept-Ranges', 'bytes');
 
+    const isDownload = req.query.download === 'true';
+    const filename = (req.query.filename as string) || 'audio-kitob.mp3';
+
     let responseType = driveRes.headers.get('content-type') || 'audio/mpeg';
     if (!responseType.includes('audio')) {
       responseType = 'audio/mpeg';
     }
     res.setHeader('Content-Type', responseType);
+    if (isDownload) {
+      res.setHeader('Content-Disposition', `attachment; filename="${encodeURIComponent(filename)}"`);
+    } else {
+      res.setHeader('Content-Disposition', 'inline');
+    }
 
     const contentRange = driveRes.headers.get('content-range');
     if (contentRange) {

@@ -3,7 +3,8 @@ import { Book, Category, SubCategory, Author, User, ReadingHistoryItem, AudioTra
 import { StorageService } from '../services/storageService';
 import { FirebaseService } from '../services/firebaseService';
 import { TelegramService, TelegramUser } from '../services/telegramService';
-import { parseGoogleDriveUrl, generateFirstPageBookCover } from '../utils/googleDrive';
+import { parseGoogleDriveUrl, generateFirstPageBookCover, getDirectAudioUrl } from '../utils/googleDrive';
+import { AudioStorageService } from '../services/audioStorage';
 import { ADMIN_USER, DEMO_USER } from '../data/mockData';
 
 export interface ToastItem {
@@ -49,6 +50,7 @@ interface LibraryContextType {
   playAudio: (track: AudioTrack) => void;
   pauseAudio: () => void;
   togglePlayAudio: () => void;
+  closeAudio: () => void;
   audioCurrentTime: number;
   setAudioCurrentTime: React.Dispatch<React.SetStateAction<number>>;
   audioDuration: number;
@@ -106,8 +108,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Audio player state
   const [activeAudioTrack, setActiveAudioTrack] = useState<AudioTrack | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [audioCurrentTime, setAudioCurrentTime] = useState<number>(45);
-  const [audioDuration] = useState<number>(1820); // sample chapter duration
+  const [audioCurrentTime, setAudioCurrentTime] = useState<number>(0);
+  const [audioDuration] = useState<number>(0);
   const [audioPlaybackRate, setAudioPlaybackRate] = useState<number>(1);
 
   // Auth modal
@@ -146,7 +148,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setTelegramUser(tgUser);
 
     // 2. Instant cache load from local storage
-    setBooks(StorageService.getBooks());
+    const cachedBooks = StorageService.getBooks().map(b => {
+      if (b.hasAudio && !b.audioUrl && b.googleDriveUrl) {
+        return { ...b, audioUrl: getDirectAudioUrl(b.googleDriveUrl) };
+      }
+      return b;
+    });
+    setBooks(cachedBooks);
     setCategories(StorageService.getCategories());
     setAuthors(StorageService.getAuthors());
     setFavorites(StorageService.getFavorites());
@@ -180,7 +188,14 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const unsubBooks = FirebaseService.subscribeBooks((cloudBooks) => {
       if (Array.isArray(cloudBooks)) {
         const deletedIds = new Set(JSON.parse(localStorage.getItem('signal_deleted_book_ids') || '[]'));
-        const cleanBooks = cloudBooks.filter(b => b && b.id && !deletedIds.has(b.id));
+        const cleanBooks = cloudBooks
+          .filter(b => b && b.id && !deletedIds.has(b.id))
+          .map(b => {
+            if (b.hasAudio && !b.audioUrl && b.googleDriveUrl) {
+              return { ...b, audioUrl: getDirectAudioUrl(b.googleDriveUrl) };
+            }
+            return b;
+          });
         setBooks(cleanBooks);
         StorageService.saveBooks(cleanBooks);
       }
@@ -333,8 +348,34 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setActiveReadingBook(null);
   };
 
-  const playAudio = (track: AudioTrack) => {
-    setActiveAudioTrack(track);
+  const playAudio = async (track: AudioTrack) => {
+    let effectiveSrc = track.audioSrc;
+    if (!effectiveSrc && track.bookId) {
+      const b = books.find(item => item.id === track.bookId);
+      if (b) {
+        effectiveSrc = b.audioUrl || (b.googleDriveUrl ? getDirectAudioUrl(b.googleDriveUrl) : '');
+      }
+    }
+
+    let finalSrc = effectiveSrc || track.audioSrc;
+    if (finalSrc && (finalSrc.startsWith('audio-') || finalSrc.startsWith('local-audio-'))) {
+      try {
+        const dbUrl = await AudioStorageService.getAudioUrl(finalSrc);
+        if (dbUrl) {
+          finalSrc = dbUrl;
+        }
+      } catch (err) {
+        console.warn('AudioStorageService lookup warning:', err);
+      }
+    } else if (finalSrc) {
+      finalSrc = getDirectAudioUrl(finalSrc);
+    }
+
+    const resolvedTrack: AudioTrack = {
+      ...track,
+      audioSrc: finalSrc
+    };
+    setActiveAudioTrack(resolvedTrack);
     setIsPlayingAudio(true);
     showToast(`"${track.title}" audio kitobi ijro etilmoqda 🎧`, 'info');
   };
@@ -345,6 +386,12 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const togglePlayAudio = () => {
     setIsPlayingAudio(prev => !prev);
+  };
+
+  const closeAudio = () => {
+    setIsPlayingAudio(false);
+    setActiveAudioTrack(null);
+    setAudioCurrentTime(0);
   };
 
   const openAuthModal = (mode: 'login' | 'register' = 'login') => {
@@ -441,7 +488,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       isFeatured: false,
       isNew: true,
       hasAudio: newBookData.hasAudio || false,
+      audioUrl: newBookData.audioUrl || (rawDriveUrl ? getDirectAudioUrl(rawDriveUrl) : undefined),
       audioDuration: newBookData.audioDuration,
+      narrator: newBookData.narrator?.trim() || undefined,
       createdAt: new Date().toISOString().split('T')[0],
       updatedAt: new Date().toISOString().split('T')[0],
       chapters: newBookData.chapters || [
@@ -494,6 +543,9 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const driveInfo = parseGoogleDriveUrl(updatedFields.googleDriveUrl);
       if (driveInfo.isDrive) {
         finalFields.pdfUrl = driveInfo.previewUrl;
+        if (updatedFields.hasAudio || books.find(b => b.id === id)?.hasAudio) {
+          finalFields.audioUrl = `/api/drive-audio?id=${driveInfo.fileId}`;
+        }
       }
     }
 
@@ -806,6 +858,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         playAudio,
         pauseAudio,
         togglePlayAudio,
+        closeAudio,
         audioCurrentTime,
         setAudioCurrentTime,
         audioDuration,

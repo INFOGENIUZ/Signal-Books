@@ -164,8 +164,9 @@ export const PdfReader: React.FC = () => {
     title: activeReadingBook.title,
     author: activeReadingBook.authorName,
     coverUrl: activeReadingBook.coverUrl,
-    duration: 1800,
-    narrator: 'Professional suxandon'
+    duration: 0,
+    audioSrc: activeReadingBook.audioUrl || activeReadingBook.googleDriveUrl,
+    narrator: activeReadingBook.narrator?.trim() && activeReadingBook.narrator !== 'Professional suxandon' ? activeReadingBook.narrator : undefined
   } : null;
   const isCurrentBookAudioPlaying = isPlayingAudio && activeAudioTrack?.bookId === activeReadingBook.id;
 

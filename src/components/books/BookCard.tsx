@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, Bookmark, BookText, AudioLines, Eye } from 'lucide-react';
+import { Star, Bookmark, BookText, AudioLines, Eye, Headphones } from 'lucide-react';
 import { Book } from '../../types';
 import { useLibrary } from '../../context/LibraryContext';
 
@@ -11,6 +11,10 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
   const { openBookDetails, startReading, favorites, toggleFavorite } = useLibrary();
 
   const isFav = favorites.includes(book.id);
+  const isAudioOnly = Boolean(
+    book.hasAudio && 
+    (!book.pdfUrl || book.pdfUrl === '#' || book.pages === 0 || (book.format && book.format.length === 1 && book.format[0] === 'AUDIO'))
+  );
 
   return (
     <div 
@@ -64,17 +68,26 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
           <Bookmark className={`w-3.5 h-3.5 ${isFav ? 'fill-current' : ''}`} />
         </button>
 
-        {/* Quick Read Button on hover */}
+        {/* Quick Read/Listen Button on hover */}
         <div className="absolute inset-x-3 bottom-3 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
           <button
             onClick={(e) => {
               e.stopPropagation();
-              startReading(book);
+              openBookDetails(book);
             }}
-            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center justify-center gap-2 shadow-lg backdrop-blur-md transition-all"
+            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold flex items-center justify-center gap-2 shadow-lg backdrop-blur-md transition-all cursor-pointer"
           >
-            <BookText className="w-3.5 h-3.5 text-stone-950" />
-            <span>O‘qish</span>
+            {isAudioOnly ? (
+              <>
+                <Headphones className="w-3.5 h-3.5 text-stone-950" />
+                <span>Tinglash</span>
+              </>
+            ) : (
+              <>
+                <BookText className="w-3.5 h-3.5 text-stone-950" />
+                <span>O‘qish</span>
+              </>
+            )}
           </button>
         </div>
       </div>
@@ -115,7 +128,7 @@ export const BookCard: React.FC<BookCardProps> = ({ book }) => {
             <span>{book.views.toLocaleString()}</span>
           </span>
           <span className="text-stone-400 font-mono text-[10px]">
-            {book.pages} bet
+            {isAudioOnly ? (book.audioDuration || 'Audio kitob') : `${book.pages} bet`}
           </span>
         </div>
       </div>
