@@ -27,8 +27,11 @@ interface LibraryContextType {
   authors: Author[];
   favorites: string[];
   toggleFavorite: (bookId: string) => void;
+  clearAllFavorites: () => void;
   readingHistory: ReadingHistoryItem[];
   updateReadingProgress: (book: Book, page: number) => void;
+  removeFromHistory: (bookId: string) => void;
+  clearHistory: () => void;
   activePage: ActivePage;
   setActivePage: (page: ActivePage) => void;
   selectedBook: Book | null;
@@ -157,7 +160,10 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setBooks(cachedBooks);
     setCategories(StorageService.getCategories());
     setAuthors(StorageService.getAuthors());
-    setFavorites(StorageService.getFavorites());
+    
+    // Clear all favorites database as requested by user
+    const emptyFavs = StorageService.clearAllFavorites();
+    setFavorites(emptyFavs);
     setReadingHistory(StorageService.getReadingHistory());
     
     const storedUser = StorageService.getUser();
@@ -276,6 +282,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setToasts(prev => prev.filter(t => t.id !== id));
   };
 
+  const clearAllFavorites = () => {
+    TelegramService.hapticImpact('medium');
+    const empty = StorageService.clearAllFavorites();
+    setFavorites(empty);
+    showToast('Sevimlilar bazasi to‘liq tozalandi! ⭐', 'info');
+  };
+
   const toggleFavorite = (bookId: string) => {
     TelegramService.hapticSelection();
     const updated = StorageService.toggleFavorite(bookId);
@@ -288,6 +301,20 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     } else {
       showToast(`${bookTitle} sevimlilardan olib tashlandi`, 'info');
     }
+  };
+
+  const removeFromHistory = (bookId: string) => {
+    TelegramService.hapticImpact('light');
+    const updated = StorageService.removeFromReadingHistory(bookId);
+    setReadingHistory(updated);
+    showToast('Tarixdan olib tashlandi', 'info');
+  };
+
+  const clearHistory = () => {
+    TelegramService.hapticImpact('medium');
+    const empty = StorageService.clearReadingHistory();
+    setReadingHistory(empty);
+    showToast('O‘qish tarixi to‘liq tozalandi', 'info');
   };
 
   const updateReadingProgress = (_book: Book, _page: number) => {
@@ -491,8 +518,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       audioUrl: newBookData.audioUrl || (rawDriveUrl ? getDirectAudioUrl(rawDriveUrl) : undefined),
       audioDuration: newBookData.audioDuration,
       narrator: newBookData.narrator?.trim() || undefined,
-      createdAt: new Date().toISOString().split('T')[0],
-      updatedAt: new Date().toISOString().split('T')[0],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
       chapters: newBookData.chapters || [
         { id: 'ch-1', title: '1-bob. Kirish qismi', pageNumber: 1 },
         { id: 'ch-2', title: '2-bob. Asosiy bob', pageNumber: 50 }
@@ -835,8 +862,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         authors,
         favorites,
         toggleFavorite,
+        clearAllFavorites,
         readingHistory,
         updateReadingProgress,
+        removeFromHistory,
+        clearHistory,
         activePage,
         setActivePage,
         selectedBook,

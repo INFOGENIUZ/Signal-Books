@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { 
-  Menu, 
-  Search, 
-  Bell, 
   CheckCheck
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { WeatherClockWidget } from './WeatherClockWidget';
+import { Icon3D } from './Icon3D';
 
 interface HeaderProps {
   onOpenMobileMenu?: () => void;
@@ -36,16 +34,16 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 w-full bg-[#0F0C09]/90 backdrop-blur-xl border-b border-amber-950/60 px-4 sm:px-6 py-3 transition-colors">
+    <header className="sticky top-0 z-50 w-full bg-[#0F0C09]/95 backdrop-blur-xl border-b border-amber-950/60 px-4 sm:px-6 py-2.5 transition-colors">
       <div className="flex items-center justify-between gap-2 sm:gap-4">
         {/* Left: Mobile Menu & Search */}
         <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 max-w-2xl">
           <button
             onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 rounded-xl text-stone-400 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors shrink-0"
+            className="lg:hidden p-2 rounded-xl text-stone-300 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors shrink-0 flex items-center justify-center"
             aria-label="Menyu"
           >
-            <Menu className="w-5 h-5" />
+            <Icon3D name="menu" size={22} />
           </button>
 
           {/* Mobile Brand Logo */}
@@ -62,10 +60,10 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
             </span>
           </button>
 
-          {/* Search bar (Hidden on mobile media CSS, visible on tablet and desktop) */}
+          {/* Search bar */}
           <form onSubmit={handleSearchSubmit} className="header-search-form relative w-full min-w-0 max-w-lg hidden sm:block">
             <div className="relative flex items-center">
-              <Search className="absolute left-3.5 w-4 h-4 text-amber-500/60 pointer-events-none" />
+              <Icon3D name="search" size={18} className="absolute left-3.5 pointer-events-none opacity-80" />
               <input
                 type="text"
                 value={searchQuery}
@@ -93,19 +91,19 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
 
         {/* Right Action Icons & Weather/Clock Widget */}
         <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
-          {/* Real-time Weather, Clock & Date Widget */}
+          {/* Real-time Weather, Clock & Date Widget with 3D Fluency Icons */}
           <WeatherClockWidget />
 
-          {/* Notifications Dropdown */}
+          {/* Notifications Dropdown with 3D Bell Icon */}
           <div className="relative">
             <button
               onClick={() => setIsNotifOpen(!isNotifOpen)}
-              className="relative p-2 rounded-xl text-stone-400 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors"
+              className="relative p-2 rounded-xl text-stone-300 hover:text-white hover:bg-[#1C150F] border border-amber-950/80 transition-colors flex items-center justify-center"
               aria-label="Bildirishnomalar"
             >
-              <Bell className="w-4 h-4" />
+              <Icon3D name="bell" size={22} />
               {unreadCount > 0 && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-[0_0_8px_#f59e0b]" />
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-gradient-to-r from-amber-400 to-orange-500 rounded-full shadow-[0_0_8px_#f59e0b] border border-[#0F0C09]" />
               )}
             </button>
 
@@ -113,7 +111,8 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
               <div className="absolute right-0 mt-2 w-[calc(100vw-2rem)] max-w-sm sm:w-96 rounded-2xl bg-[#16110D] border border-amber-500/25 shadow-2xl backdrop-blur-2xl p-4 z-50">
                 <div className="flex items-center justify-between pb-3 border-b border-amber-950/80">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-stone-100">Bildirishnomalar</span>
+                    <Icon3D name="bell" size={20} />
+                    <span className="text-sm font-bold text-stone-100 font-heading">Bildirishnomalar</span>
                     {unreadCount > 0 && (
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">
                         {unreadCount} ta yangi
@@ -123,9 +122,9 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
                   {unreadCount > 0 && (
                     <button
                       onClick={markNotificationsAsRead}
-                      className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1"
+                      className="text-[11px] text-amber-400 hover:text-amber-300 flex items-center gap-1 font-semibold"
                     >
-                      <CheckCheck className="w-3 h-3" />
+                      <CheckCheck className="w-3.5 h-3.5" />
                       <span>Barchasini o‘qish</span>
                     </button>
                   )}
@@ -153,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileMenu }) => {
             )}
           </div>
 
-          {/* If admin is logged in, show discreet Admin indicator with direct panel shortcut and logout */}
+          {/* Admin shortcut */}
           {isAdmin && user ? (
             <div className="flex items-center gap-2">
               <button

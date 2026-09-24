@@ -24,6 +24,7 @@ import { TelegramService } from '../services/telegramService';
 import { BookCard } from '../components/books/BookCard';
 import { AudioTrack } from '../types';
 import { parseGoogleDriveUrl } from '../utils/googleDrive';
+import { Icon3D } from '../components/common/Icon3D';
 
 export const BookDetailsPage: React.FC = () => {
   const { 
@@ -302,7 +303,7 @@ export const BookDetailsPage: React.FC = () => {
                   onClick={handlePlayAudio}
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
-                  <Headphones className="w-5 h-5 text-stone-950" />
+                  <Icon3D name="audio" size={22} />
                   <span>{activeAudioTrack?.bookId === selectedBook.id && isPlayingAudio ? 'Pauza' : 'Audioni tinglash'}</span>
                 </button>
 
@@ -312,7 +313,7 @@ export const BookDetailsPage: React.FC = () => {
                   className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
                   title="Audioni qurilmaga yuklab olish"
                 >
-                  <Download className="w-4 h-4 text-amber-400" />
+                  <Icon3D name="download" size={20} />
                   <span>{isDownloading ? 'Yuklanmoqda...' : 'Audioni yuklab olish'}</span>
                 </button>
               </>
@@ -323,7 +324,7 @@ export const BookDetailsPage: React.FC = () => {
                   onClick={() => startReading(selectedBook)}
                   className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
-                  <BookOpen className="w-5 h-5 text-stone-950" />
+                  <Icon3D name="books" size={22} />
                   <span>PDF mutolaa qilish</span>
                 </button>
 
@@ -333,7 +334,7 @@ export const BookDetailsPage: React.FC = () => {
                       onClick={handlePlayAudio}
                       className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
                     >
-                      <Headphones className="w-4 h-4 text-amber-400" />
+                      <Icon3D name="audio" size={20} />
                       <span>{activeAudioTrack?.bookId === selectedBook.id && isPlayingAudio ? 'Pauza' : 'Audioni tinglash'}</span>
                     </button>
 
@@ -343,7 +344,7 @@ export const BookDetailsPage: React.FC = () => {
                       className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
                       title="Audioni yuklab olish"
                     >
-                      <Download className="w-4 h-4 text-amber-400" />
+                      <Icon3D name="download" size={20} />
                       <span>Audioni yuklab olish</span>
                     </button>
                   </>
@@ -354,7 +355,7 @@ export const BookDetailsPage: React.FC = () => {
                   disabled={isDownloading}
                   className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
                 >
-                  <Download className="w-4 h-4 text-amber-400" />
+                  <Icon3D name="download" size={20} />
                   <span>{isDownloading ? 'Yuklanmoqda...' : 'PDF yuklab olish'}</span>
                 </button>
               </>
@@ -369,7 +370,7 @@ export const BookDetailsPage: React.FC = () => {
               }`}
               title="Sevimlilarga saqlash"
             >
-              <Bookmark className={`w-5 h-5 ${isFav ? 'fill-current' : ''}`} />
+              <Icon3D name="favorites" size={22} />
             </button>
 
             {isAdmin && (

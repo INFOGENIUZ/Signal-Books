@@ -16,6 +16,7 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import { AudioTrack, Book } from '../types';
 import { parseGoogleDriveUrl } from '../utils/googleDrive';
+import { Icon3D } from '../components/common/Icon3D';
 
 export const AudioBooksPage: React.FC = () => {
   const { 
@@ -114,7 +115,7 @@ export const AudioBooksPage: React.FC = () => {
         
         {/* Search Input */}
         <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-500" />
+          <Icon3D name="search" size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 opacity-80" />
           <input
             type="text"
             value={searchQuery}

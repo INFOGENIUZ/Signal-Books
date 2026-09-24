@@ -478,6 +478,12 @@ export const AudioPlayer: React.FC = () => {
           src={resolvedAudioSrc || undefined}
           preload="auto"
           onWaiting={() => setIsLoadingAudio(true)}
+          onCanPlay={() => {
+            setIsLoadingAudio(false);
+            if (htmlAudioRef.current) {
+              htmlAudioRef.current.playbackRate = audioPlaybackRate;
+            }
+          }}
           onPlay={() => {
             if (htmlAudioRef.current) {
               htmlAudioRef.current.playbackRate = audioPlaybackRate;

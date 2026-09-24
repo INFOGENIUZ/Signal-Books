@@ -1,13 +1,7 @@
 import React from 'react';
-import { 
-  Compass, 
-  BookText, 
-  LayoutGrid, 
-  AudioLines, 
-  BookmarkCheck 
-} from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { ActivePage } from '../../types';
+import { Icon3D } from './Icon3D';
 
 export const MobileBottomNav: React.FC = () => {
   const { 
@@ -24,18 +18,18 @@ export const MobileBottomNav: React.FC = () => {
   const navButtons: Array<{
     id: ActivePage;
     label: string;
-    icon: React.ComponentType<{ className?: string }>;
+    iconName: string;
     badge?: number;
     action?: () => void;
   }> = [
-    { id: 'home', label: 'Asosiy', icon: Compass },
-    { id: 'books', label: 'Kitoblar', icon: BookText },
-    { id: 'categories', label: 'Bo‘limlar', icon: LayoutGrid },
-    { id: 'audio', label: 'Audio', icon: AudioLines },
+    { id: 'home', label: 'Asosiy', iconName: 'home' },
+    { id: 'books', label: 'Kitoblar', iconName: 'books' },
+    { id: 'categories', label: 'Bo‘limlar', iconName: 'categories' },
+    { id: 'audio', label: 'Audio', iconName: 'audio' },
     { 
       id: 'favorites', 
       label: 'Sevimlilar', 
-      icon: BookmarkCheck, 
+      iconName: 'favorites', 
       badge: favorites.length > 0 ? favorites.length : undefined 
     }
   ];
@@ -48,7 +42,6 @@ export const MobileBottomNav: React.FC = () => {
     >
       <div className="flex items-center justify-around px-2 py-1.5 max-w-lg mx-auto">
         {navButtons.map(item => {
-          const Icon = item.icon;
           const isActive = activePage === item.id || (item.id === 'categories' && activePage === 'category-details');
 
           return (
@@ -64,7 +57,7 @@ export const MobileBottomNav: React.FC = () => {
               title={item.label}
             >
               <div className="relative">
-                <Icon className={`w-5 h-5 transition-transform ${isActive ? 'scale-110 text-amber-400' : ''}`} />
+                <Icon3D name={item.iconName} size={28} className={`transition-all ${isActive ? 'scale-110 filter drop-shadow-[0_2px_10px_rgba(245,158,11,0.6)]' : 'opacity-85 hover:opacity-100'}`} />
                 {item.badge !== undefined && (
                   <span className="absolute -top-1.5 -right-2 min-w-[15px] h-[15px] rounded-full bg-gradient-to-r from-amber-500 to-orange-500 text-stone-950 text-[9px] font-extrabold flex items-center justify-center px-0.5 shadow-sm">
                     {item.badge > 99 ? '99+' : item.badge}

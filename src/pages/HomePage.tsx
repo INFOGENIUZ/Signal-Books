@@ -1,9 +1,8 @@
 import React from 'react';
 import { 
-  Search, 
   ArrowRight, 
   TrendingUp, 
-  Sparkles, 
+  Clock, 
   AudioLines, 
   ChevronRight,
   BookText,
@@ -13,7 +12,10 @@ import { useLibrary } from '../context/LibraryContext';
 import { FeaturedBookCard } from '../components/books/FeaturedBookCard';
 import { BookCard } from '../components/books/BookCard';
 import { BookShowcaseSlider } from '../components/home/BookShowcaseSlider';
+import { HeroSearchBar } from '../components/home/HeroSearchBar';
 import { Book, AudioTrack } from '../types';
+import { Icon3D } from '../components/common/Icon3D';
+import { isBookNew } from '../utils/bookUtils';
 
 export const HomePage: React.FC = () => {
   const { 
@@ -30,17 +32,10 @@ export const HomePage: React.FC = () => {
     isAdmin 
   } = useLibrary();
 
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      setActivePage('books');
-    }
-  };
-
   // Featured books
   const featuredBooks = books.filter(b => b.isFeatured).slice(0, 4);
-  // New books
-  const newBooks = books.filter(b => b.isNew || b.publicationYear >= 2020).slice(0, 6);
+  // New books (uploaded within the last 24 hours)
+  const newBooks = books.filter(b => isBookNew(b)).slice(0, 6);
   // Audio books
   const audioBooks = books.filter(b => b.hasAudio).slice(0, 4);
   // Top Categories (first 8)
@@ -68,32 +63,16 @@ export const HomePage: React.FC = () => {
             Elektron kitoblar, darsliklar va audio asarlar to‘plami
           </p>
 
-          {/* Large Search Bar */}
-          <form onSubmit={handleHeroSearch} className="max-w-2xl mx-auto relative mb-5">
-            <div className="relative flex items-center rounded-2xl bg-[#18130E]/90 border border-amber-500/30 p-1 sm:p-1.5 shadow-[0_0_30px_rgba(245,158,11,0.2)] focus-within:border-amber-400 focus-within:ring-2 focus-within:ring-amber-500/30 transition-all">
-              <Search className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500/60 ml-2.5 sm:ml-3 shrink-0" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Kitob nomi, muallif yoki mavzu bo‘yicha qidirish..."
-                className="w-full px-2.5 sm:px-3 py-2 sm:py-3 bg-transparent text-xs sm:text-base text-stone-100 placeholder-stone-500 outline-none"
-              />
-              <button
-                type="submit"
-                className="px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs sm:text-sm font-bold flex items-center gap-1.5 sm:gap-2 shadow-[0_0_20px_rgba(245,158,11,0.4)] transition-all shrink-0 hover:scale-[1.02]"
-              >
-                <span>Qidirish</span>
-                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-950" />
-              </button>
-            </div>
-          </form>
+          {/* Creative Large Search Bar with Live Suggestions & Quick Tags */}
+          <HeroSearchBar />
         </div>
       </section>
 
       {/* Dynamic Animated Book Showcase Slider (Auto-slides every 3-4s, gesture drag/swipe) */}
       {books.length > 0 && (
-        <BookShowcaseSlider books={books} />
+        <div className="pt-6 sm:pt-10 md:pt-12">
+          <BookShowcaseSlider books={books} />
+        </div>
       )}
 
       {/* When books are empty: Pristine clean state */}
@@ -174,7 +153,7 @@ export const HomePage: React.FC = () => {
               <div className="flex items-end justify-between mb-6">
                 <div>
                   <div className="flex items-center gap-2 text-amber-400 font-bold text-xs uppercase tracking-wider mb-1">
-                    <Sparkles className="w-4 h-4 text-amber-400" />
+                    <Clock className="w-4 h-4 text-amber-400" />
                     <span>Yangi nashrlar</span>
                   </div>
                   <h2 className="font-serif-title text-2xl sm:text-3xl font-extrabold text-stone-100 tracking-tight">

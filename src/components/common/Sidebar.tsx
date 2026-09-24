@@ -1,22 +1,15 @@
 import React from 'react';
 import { 
-  Compass, 
-  BookText, 
-  LayoutGrid, 
-  AudioLines, 
-  BookmarkCheck, 
-  History, 
-  Info, 
-  ShieldCheck, 
   LogIn, 
   UserPlus, 
   LogOut,
   BookMarked,
-  Lock,
+  ShieldCheck,
   X
 } from 'lucide-react';
 import { useLibrary } from '../../context/LibraryContext';
 import { ActivePage } from '../../types';
+import { Icon3D } from './Icon3D';
 
 interface SidebarProps {
   isMobileOpen?: boolean;
@@ -39,16 +32,16 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
   const navItems: Array<{
     id: ActivePage;
     label: string;
-    icon: React.ComponentType<{ className?: string }>;
+    iconName: string;
     badge?: number | string;
   }> = [
-    { id: 'home', label: 'Bosh sahifa', icon: Compass },
-    { id: 'books', label: 'Barcha kitoblar', icon: BookText },
-    { id: 'categories', label: 'Kategoriyalar', icon: LayoutGrid },
-    { id: 'audio', label: 'Audio kitoblar', icon: AudioLines },
-    { id: 'favorites', label: 'Sevimlilar', icon: BookmarkCheck, badge: favorites.length > 0 ? favorites.length : undefined },
-    { id: 'history', label: 'O‘qish tarixi', icon: History, badge: readingHistory.length > 0 ? readingHistory.length : undefined },
-    { id: 'about', label: 'Biz haqimizda', icon: Info },
+    { id: 'home', label: 'Bosh sahifa', iconName: 'home' },
+    { id: 'books', label: 'Barcha kitoblar', iconName: 'books' },
+    { id: 'categories', label: 'Kategoriyalar', iconName: 'categories' },
+    { id: 'audio', label: 'Audio kitoblar', iconName: 'audio' },
+    { id: 'favorites', label: 'Sevimlilar', iconName: 'favorites', badge: favorites.length > 0 ? favorites.length : undefined },
+    { id: 'history', label: 'O‘qish tarixi', iconName: 'history', badge: readingHistory.length > 0 ? readingHistory.length : undefined },
+    { id: 'about', label: 'Biz haqimizda', iconName: 'about' },
   ];
 
   const handleNavClick = (page: ActivePage) => {
@@ -69,12 +62,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
       {isMobileOpen && (
         <div 
           onClick={onCloseMobile}
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 lg:hidden transition-opacity"
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 lg:hidden transition-opacity"
         />
       )}
 
       <aside className={`
-        fixed top-0 left-0 bottom-0 z-40 w-[260px] bg-[#110D0A]/95 backdrop-blur-xl border-r border-amber-950/60 flex flex-col justify-between transition-transform duration-300 ease-in-out
+        fixed top-0 left-0 bottom-0 z-[60] w-[260px] bg-[#110D0A]/95 backdrop-blur-xl border-r border-amber-950/60 flex flex-col justify-between transition-transform duration-300 ease-in-out
         lg:translate-x-0
         ${isMobileOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full lg:translate-x-0'}
       `}>
@@ -128,7 +121,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
           </div>
 
           {navItems.map(item => {
-            const Icon = item.icon;
             const isActive = activePage === item.id || (item.id === 'categories' && activePage === 'category-details');
             return (
               <button
@@ -142,7 +134,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
                 `}
               >
                 <div className="flex items-center gap-3">
-                  <Icon className={`w-4 h-4 transition-colors ${isActive ? 'text-amber-400' : 'text-stone-400 group-hover:text-amber-400'}`} />
+                  <Icon3D name={item.iconName} size={22} className="shrink-0" />
                   <span>{item.label}</span>
                 </div>
 
@@ -177,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen = false, onCloseM
                 `}
               >
                 <div className="flex items-center gap-3">
-                  <ShieldCheck className="w-4 h-4 text-amber-400" />
+                  <Icon3D name="admin" size={22} className="shrink-0" />
                   <span>Admin Panel</span>
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded border bg-amber-500/20 text-amber-300 border-amber-500/30">

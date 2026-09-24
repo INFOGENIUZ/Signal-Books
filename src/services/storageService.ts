@@ -148,6 +148,15 @@ export const StorageService = {
     return [];
   },
 
+  clearAllFavorites(): string[] {
+    safeSet(STORAGE_KEYS.FAVORITES, JSON.stringify([]));
+    try {
+      localStorage.removeItem('signal_favorites_v3');
+      localStorage.removeItem('kitoblar_olami_favorites_v1');
+    } catch {}
+    return [];
+  },
+
   toggleFavorite(bookId: string): string[] {
     const favorites = this.getFavorites();
     let updated: string[];
@@ -169,6 +178,22 @@ export const StorageService = {
     } catch {
       // fallback
     }
+    return [];
+  },
+
+  removeFromReadingHistory(bookId: string): ReadingHistoryItem[] {
+    const history = this.getReadingHistory();
+    const updated = history.filter(item => item.bookId !== bookId);
+    safeSet(STORAGE_KEYS.HISTORY, JSON.stringify(updated));
+    return updated;
+  },
+
+  clearReadingHistory(): ReadingHistoryItem[] {
+    safeSet(STORAGE_KEYS.HISTORY, JSON.stringify([]));
+    try {
+      localStorage.removeItem(STORAGE_KEYS.HISTORY);
+      localStorage.removeItem('kitoblar_olami_history_v1');
+    } catch {}
     return [];
   },
 

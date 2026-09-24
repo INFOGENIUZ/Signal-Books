@@ -35,6 +35,10 @@
   font-family: 'Playfair Display', Georgia, Cambria, serif;
 }
 
+.font-heading {
+  font-family: 'Outfit', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
 /* Custom warm subtle scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
