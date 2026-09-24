@@ -24,6 +24,9 @@
         "isFeatured": { "type": "boolean", "optional": true },
         "isTrending": { "type": "boolean", "optional": true },
         "hasAudio": { "type": "boolean", "optional": true },
+        "audioUrl": { "type": "string", "maxLength": 1024, "optional": true },
+        "audioDuration": { "type": "string", "maxLength": 128, "optional": true },
+        "narrator": { "type": "string", "maxLength": 128, "optional": true },
         "createdAt": { "type": "string", "maxLength": 64, "optional": true }
       }
     },

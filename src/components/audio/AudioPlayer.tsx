@@ -38,7 +38,49 @@ export const AudioPlayer: React.FC = () => {
   const gainNodeRef = useRef<GainNode | null>(null);
 
   // Sound generator initialization
+  const htmlAudioRef = useRef<HTMLAudioElement | null>(null);
+  const [realDuration, setRealDuration] = useState<number | null>(null);
+
+  // If real audioSrc exists, control HTML5 audio
   useEffect(() => {
+    const audioEl = htmlAudioRef.current;
+    if (!audioEl) return;
+
+    if (activeAudioTrack?.audioSrc) {
+      if (audioEl.src !== activeAudioTrack.audioSrc) {
+        audioEl.src = activeAudioTrack.audioSrc;
+        audioEl.load();
+      }
+      if (isPlayingAudio) {
+        audioEl.play().catch(e => {
+          console.warn('Real audio play caught:', e);
+        });
+      } else {
+        audioEl.pause();
+      }
+    } else {
+      audioEl.pause();
+    }
+  }, [isPlayingAudio, activeAudioTrack]);
+
+  // Volume & rate updates on real audio element
+  useEffect(() => {
+    if (htmlAudioRef.current) {
+      htmlAudioRef.current.volume = isMuted ? 0 : volume;
+      htmlAudioRef.current.playbackRate = audioPlaybackRate;
+    }
+  }, [volume, isMuted, audioPlaybackRate]);
+
+  // Sound generator initialization (used only when no real audioSrc is present)
+  useEffect(() => {
+    // Only synthesize ambient tone if there is NO real audioSrc
+    if (activeAudioTrack?.audioSrc) {
+      if (gainNodeRef.current && audioContextRef.current) {
+        gainNodeRef.current.gain.setValueAtTime(0, audioContextRef.current.currentTime);
+      }
+      return;
+    }
+
     if (isPlayingAudio) {
       try {
         const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
@@ -102,7 +144,7 @@ export const AudioPlayer: React.FC = () => {
         oscillatorRef.current = null;
       }
     };
-  }, [isPlayingAudio, volume, isMuted]);
+  }, [isPlayingAudio, volume, isMuted, activeAudioTrack]);
 
   // Advance timer while playing
   useEffect(() => {
@@ -129,31 +171,65 @@ export const AudioPlayer: React.FC = () => {
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const effectiveDuration = realDuration || audioDuration;
+
   const handleSkip = (seconds: number) => {
-    setAudioCurrentTime(Math.max(0, Math.min(audioDuration, audioCurrentTime + seconds)));
+    const nextTime = Math.max(0, Math.min(effectiveDuration, audioCurrentTime + seconds));
+    setAudioCurrentTime(nextTime);
+    if (htmlAudioRef.current) {
+      htmlAudioRef.current.currentTime = nextTime;
+    }
+  };
+
+  const handleSeek = (newTime: number) => {
+    setAudioCurrentTime(newTime);
+    if (htmlAudioRef.current) {
+      htmlAudioRef.current.currentTime = newTime;
+    }
   };
 
   const speeds = [0.75, 1, 1.25, 1.5, 2];
 
   return (
     <div className="fixed bottom-[48px] sm:bottom-[52px] lg:bottom-0 inset-x-0 lg:left-[260px] z-30 bg-[#130E0A]/95 backdrop-blur-2xl border-t border-amber-500/30 shadow-[0_-10px_35px_rgba(0,0,0,0.8)] text-white audio-player-container">
+      {/* Hidden real audio element */}
+      <audio
+        ref={htmlAudioRef}
+        src={activeAudioTrack.audioSrc}
+        preload="auto"
+        onTimeUpdate={() => {
+          if (htmlAudioRef.current && isPlayingAudio) {
+            setAudioCurrentTime(htmlAudioRef.current.currentTime);
+          }
+        }}
+        onLoadedMetadata={() => {
+          if (htmlAudioRef.current && htmlAudioRef.current.duration && !isNaN(htmlAudioRef.current.duration)) {
+            setRealDuration(Math.round(htmlAudioRef.current.duration));
+          }
+        }}
+        onEnded={() => {
+          pauseAudio();
+          setAudioCurrentTime(0);
+        }}
+      />
+
       {/* Progress Bar Top Scrubber */}
       <div className="relative group w-full h-1.5 bg-stone-900 cursor-pointer">
         <input
           type="range"
           min={0}
-          max={audioDuration}
+          max={effectiveDuration}
           value={audioCurrentTime}
-          onChange={(e) => setAudioCurrentTime(Number(e.target.value))}
+          onChange={(e) => handleSeek(Number(e.target.value))}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         />
         <div 
           className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 transition-all"
-          style={{ width: `${(audioCurrentTime / audioDuration) * 100}%` }}
+          style={{ width: `${(audioCurrentTime / effectiveDuration) * 100}%` }}
         />
         <div 
           className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-amber-400 rounded-full shadow-[0_0_10px_#f59e0b] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-          style={{ left: `calc(${(audioCurrentTime / audioDuration) * 100}% - 6px)` }}
+          style={{ left: `calc(${(audioCurrentTime / effectiveDuration) * 100}% - 6px)` }}
         />
       </div>
 

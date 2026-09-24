@@ -69,6 +69,7 @@ import { Book, Category, BookLanguage } from '../../types';
 import { parseGoogleDriveUrl, GoogleDriveParsedInfo, generateFirstPageBookCover } from '../../utils/googleDrive';
 import { AiBookAnalysisCard } from '../../components/admin/AiBookAnalysisCard';
 import { AiBookAnalysisResult, analyzeBookWithAI } from '../../services/aiBookAnalysisService';
+import { AdminAudioBookUploadCard } from '../../components/admin/AdminAudioBookUploadCard';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   BookOpen: BookText,
@@ -141,7 +142,7 @@ export const AdminDashboard: React.FC = () => {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Dashboard tab and view states
-  const [activeAdminTab, setActiveAdminTab] = useState<'stats' | 'books' | 'categories' | 'add'>('stats');
+  const [activeAdminTab, setActiveAdminTab] = useState<'stats' | 'books' | 'categories' | 'add' | 'add-audio'>('stats');
   const [booksViewMode, setBooksViewMode] = useState<'table' | 'grid'>('table');
   
   // Books list filter & sort states
@@ -149,6 +150,7 @@ export const AdminDashboard: React.FC = () => {
   const [filterCategory, setFilterCategory] = useState<string>('all');
   const [filterLanguage, setFilterLanguage] = useState<string>('all');
   const [filterDriveOnly, setFilterDriveOnly] = useState<'all' | 'drive' | 'direct'>('all');
+  const [filterAudioOnly, setFilterAudioOnly] = useState<'all' | 'audio' | 'pdf'>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'views' | 'pages' | 'title'>('newest');
   
   // Book editing & deletion states
@@ -299,7 +301,12 @@ export const AdminDashboard: React.FC = () => {
         filterDriveOnly === 'all' ? true :
         filterDriveOnly === 'drive' ? isDrive : !isDrive;
 
-      return matchesSearch && matchesCat && matchesLang && matchesDrive;
+      const isAudio = Boolean(b.hasAudio || b.audioUrl || (b.format && b.format.includes('AUDIO')));
+      const matchesAudio = 
+        filterAudioOnly === 'all' ? true :
+        filterAudioOnly === 'audio' ? isAudio : !isAudio;
+
+      return matchesSearch && matchesCat && matchesLang && matchesDrive && matchesAudio;
     });
 
     return list.sort((a, b) => {
@@ -309,7 +316,7 @@ export const AdminDashboard: React.FC = () => {
       // default: newest
       return (b.publicationYear || 0) - (a.publicationYear || 0);
     });
-  }, [books, searchTableQuery, filterCategory, filterLanguage, filterDriveOnly, sortBy]);
+  }, [books, searchTableQuery, filterCategory, filterLanguage, filterDriveOnly, filterAudioOnly, sortBy]);
 
   // Top books by views
   const topReadBooks = useMemo(() => {
@@ -734,14 +741,31 @@ export const AdminDashboard: React.FC = () => {
 
             <button
               onClick={() => setActiveAdminTab('add')}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
                 activeAdminTab === 'add' 
                   ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-stone-950 shadow-md shadow-amber-500/30' 
                   : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800/40'
               }`}
             >
               <Plus className="w-4 h-4" />
-              <span>Yangi Kitob Qo‘shish</span>
+              <span>Yangi Kitob (PDF)</span>
+            </button>
+
+            <button
+              onClick={() => setActiveAdminTab('add-audio')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'add-audio' 
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-stone-950 shadow-md shadow-orange-500/30' 
+                  : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800/40'
+              }`}
+            >
+              <Headphones className="w-4 h-4 text-orange-400" />
+              <span>Audio Kitob Yuklash</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                activeAdminTab === 'add-audio' ? 'bg-stone-950/40 text-stone-950' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
+              }`}>
+                Yangi 🎧
+              </span>
             </button>
           </div>
 
@@ -1030,10 +1054,18 @@ export const AdminDashboard: React.FC = () => {
 
                 <button
                   onClick={() => setActiveAdminTab('add')}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold transition-all shadow-md shadow-amber-500/25 active:scale-95 whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-stone-950 text-xs font-bold transition-all shadow-md shadow-amber-500/25 active:scale-95 whitespace-nowrap cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
-                  <span>Yangi kitob</span>
+                  <span>+ Kitob (PDF)</span>
+                </button>
+
+                <button
+                  onClick={() => setActiveAdminTab('add-audio')}
+                  className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-stone-950 text-xs font-bold transition-all shadow-md shadow-orange-500/25 active:scale-95 whitespace-nowrap cursor-pointer"
+                >
+                  <Headphones className="w-4 h-4 text-stone-950" />
+                  <span>+ Audio kitob</span>
                 </button>
               </div>
             </div>
@@ -1044,6 +1076,17 @@ export const AdminDashboard: React.FC = () => {
                 <Filter className="w-3.5 h-3.5 text-amber-400" />
                 <span className="font-semibold">Filtr:</span>
               </div>
+
+              {/* Format Filter (Audio vs PDF) */}
+              <select
+                value={filterAudioOnly}
+                onChange={(e) => setFilterAudioOnly(e.target.value as any)}
+                className="bg-[#1C140E] border border-amber-950/90 focus:border-amber-500 rounded-xl px-3 py-1.5 text-xs text-amber-300 font-medium focus:outline-none"
+              >
+                <option value="all">Barcha formatlar (PDF & Audio)</option>
+                <option value="audio">🎧 Faqat Audio kitoblar ({audioBooksCount})</option>
+                <option value="pdf">📄 Faqat PDF kitoblar ({totalBooks - audioBooksCount})</option>
+              </select>
 
               {/* Category Filter */}
               <select
@@ -1990,6 +2033,22 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 6.1 DEDICATED AUDIO BOOK UPLOAD (OVOZLI KUTUBXONA STUDIYASI) */}
+      {/* ============================================================== */}
+      {activeAdminTab === 'add-audio' && (
+        <AdminAudioBookUploadCard
+          categories={categories}
+          authors={authors}
+          onAddAudioBook={(bookData) => {
+            addBook(bookData);
+            setActiveAdminTab('books');
+          }}
+          showToast={showToast}
+          onCancel={() => setActiveAdminTab('books')}
+        />
       )}
 
       {/* ============================================================== */}

@@ -54,6 +54,7 @@ export interface Book {
   googleDriveUrl?: string;
   audioUrl?: string;
   audioDuration?: string; // e.g. "5 soat 42 daqiqa"
+  narrator?: string;
   hasAudio?: boolean;
   language: BookLanguage;
   publicationYear: number;

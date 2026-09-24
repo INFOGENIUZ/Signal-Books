@@ -118,6 +118,136 @@ export function generateFirstPageBookCover(
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
+/**
+ * Generates a luxury SVG Data URL specifically for Audio Books
+ * Contains headphones emblem, sound waves, author and narrator credentials.
+ */
+export function generateAudioBookCover(
+  title: string = 'Audio Kitob',
+  author: string = 'Muallif',
+  narrator: string = 'Professional suxandon',
+  category: string = 'Audio kitoblar',
+  year: number = new Date().getFullYear()
+): string {
+  const safeTitle = (title || 'Audio Kitob').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeAuthor = (author || 'Muallif').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeNarrator = (narrator || 'Professional suxandon').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeCategory = (category || 'Ovozli kutubxona').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+  const svg = `
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="100%" height="100%">
+    <defs>
+      <linearGradient id="audioBg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#190F07" />
+        <stop offset="50%" stop-color="#120A05" />
+        <stop offset="100%" stop-color="#080503" />
+      </linearGradient>
+      <radialGradient id="centerGlow" cx="50%" cy="38%" r="45%">
+        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25" />
+        <stop offset="60%" stop-color="#ea580c" stop-opacity="0.08" />
+        <stop offset="100%" stop-color="#000000" stop-opacity="0" />
+      </radialGradient>
+      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#fbbf24" />
+        <stop offset="100%" stop-color="#d97706" />
+      </linearGradient>
+    </defs>
+
+    <!-- Background -->
+    <rect width="600" height="900" fill="url(#audioBg)" />
+    <rect width="600" height="900" fill="url(#centerGlow)" />
+
+    <!-- Vinyl Grooves Graphic -->
+    <circle cx="300" cy="330" r="230" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.06" />
+    <circle cx="300" cy="330" r="190" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.08" />
+    <circle cx="300" cy="330" r="150" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.1" />
+
+    <!-- Luxury Borders -->
+    <rect x="24" y="24" width="552" height="852" rx="16" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.3" />
+    <rect x="34" y="34" width="532" height="832" rx="12" fill="none" stroke="#ea580c" stroke-width="0.8" opacity="0.2" />
+
+    <!-- Top Badge -->
+    <rect x="190" y="60" width="220" height="34" rx="17" fill="#26170c" stroke="#f59e0b" stroke-width="1" opacity="0.75" />
+    <text x="300" y="82" text-anchor="middle" fill="#fbbf24" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="3">
+      🎧 AUDIO KITOB
+    </text>
+
+    <!-- Category -->
+    <text x="300" y="130" text-anchor="middle" fill="#d97706" font-size="12" font-family="sans-serif" font-weight="600" letter-spacing="4" opacity="0.85">
+      ${safeCategory.toUpperCase()}
+    </text>
+
+    <!-- Headphones Big Graphic -->
+    <g transform="translate(230, 180) scale(2.8)">
+      <!-- Headband -->
+      <path d="M 10 28 A 15 15 0 0 1 40 28" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" />
+      <!-- Left Ear Cup -->
+      <rect x="6" y="24" width="7" height="15" rx="3.5" fill="url(#goldGrad)" />
+      <!-- Right Ear Cup -->
+      <rect x="37" y="24" width="7" height="15" rx="3.5" fill="url(#goldGrad)" />
+      <!-- Inner detail -->
+      <line x1="9.5" y1="27" x2="9.5" y2="36" stroke="#120A05" stroke-width="1.5" />
+      <line x1="40.5" y1="27" x2="40.5" y2="36" stroke="#120A05" stroke-width="1.5" />
+    </g>
+
+    <!-- Sound Wave Bars Graphic -->
+    <g transform="translate(180, 340)">
+      <rect x="0" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.6"/>
+      <rect x="12" y="10" width="4" height="32" rx="2" fill="#f59e0b" opacity="0.75"/>
+      <rect x="24" y="4" width="4" height="44" rx="2" fill="#f59e0b" opacity="0.85"/>
+      <rect x="36" y="14" width="4" height="24" rx="2" fill="#f59e0b" opacity="0.7"/>
+      <rect x="48" y="0" width="4" height="52" rx="2" fill="#fbbf24" opacity="0.95"/>
+      <rect x="60" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.8"/>
+      <rect x="72" y="2" width="4" height="48" rx="2" fill="#fbbf24" opacity="0.9"/>
+      <rect x="84" y="12" width="4" height="28" rx="2" fill="#f59e0b" opacity="0.75"/>
+      <rect x="96" y="6" width="4" height="40" rx="2" fill="#fbbf24" opacity="0.85"/>
+      <rect x="108" y="0" width="4" height="52" rx="2" fill="#f59e0b" opacity="0.95"/>
+      <rect x="120" y="10" width="4" height="32" rx="2" fill="#f59e0b" opacity="0.8"/>
+      <rect x="132" y="2" width="4" height="48" rx="2" fill="#fbbf24" opacity="0.9"/>
+      <rect x="144" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.65"/>
+      <rect x="156" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.8"/>
+      <rect x="168" y="14" width="4" height="24" rx="2" fill="#f59e0b" opacity="0.7"/>
+      <rect x="180" y="4" width="4" height="44" rx="2" fill="#f59e0b" opacity="0.85"/>
+      <rect x="192" y="12" width="4" height="28" rx="2" fill="#f59e0b" opacity="0.7"/>
+      <rect x="204" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.75"/>
+      <rect x="216" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.6"/>
+      <rect x="228" y="20" width="4" height="12" rx="2" fill="#f59e0b" opacity="0.5"/>
+    </g>
+
+    <!-- Book Title -->
+    <foreignObject x="60" y="425" width="480" height="200">
+      <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; font-family:serif; color:#ffffff;">
+        <h1 style="font-size:32px; font-weight:700; line-height:1.25; margin:0; text-shadow:0 3px 12px rgba(0,0,0,0.9); letter-spacing:0.5px; color:#ffffff;">
+          ${safeTitle}
+        </h1>
+        <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #fbbf24, transparent); margin:18px auto 0 auto;"></div>
+      </div>
+    </foreignObject>
+
+    <!-- Author Name -->
+    <text x="300" y="650" text-anchor="middle" fill="#fde68a" font-size="22" font-family="serif" font-style="italic" font-weight="600" letter-spacing="1">
+      ${safeAuthor}
+    </text>
+
+    <!-- Narrator Badge -->
+    <rect x="120" y="685" width="360" height="42" rx="21" fill="#1C1108" stroke="#f59e0b" stroke-width="1" opacity="0.7" />
+    <text x="300" y="711" text-anchor="middle" fill="#d97706" font-size="13" font-family="sans-serif" font-weight="600" letter-spacing="0.5">
+      🎙️ Suxandon: <tspan fill="#ffffff" font-weight="700">${safeNarrator}</tspan>
+    </text>
+
+    <!-- Bottom Footer Tag -->
+    <text x="300" y="800" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="sans-serif" font-weight="700" letter-spacing="3" opacity="0.8">
+      SIGNAL BOOKS • OVOZLI KUTUBXONA
+    </text>
+    <text x="300" y="825" text-anchor="middle" fill="#78716c" font-size="10" font-family="sans-serif" letter-spacing="1.5">
+      STUDIO HQ STEREO • ${year}
+    </text>
+  </svg>
+  `.trim();
+
+  return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
 export function parseGoogleDriveUrl(url: string = ''): GoogleDriveParsedInfo {
   if (!url || typeof url !== 'string') {
     return {

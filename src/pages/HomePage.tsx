@@ -259,7 +259,8 @@ export const HomePage: React.FC = () => {
                             author: book.authorName,
                             coverUrl: book.coverUrl,
                             duration: 1800,
-                            narrator: 'Professional suxandon'
+                            audioSrc: book.audioUrl,
+                            narrator: book.narrator || 'Professional suxandon'
                           };
                           playAudio(track);
                         }}

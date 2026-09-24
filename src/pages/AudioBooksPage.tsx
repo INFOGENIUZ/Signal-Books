@@ -16,7 +16,8 @@ export const AudioBooksPage: React.FC = () => {
       author: book.authorName,
       coverUrl: book.coverUrl,
       duration: 2100,
-      narrator: 'Professional suxandon'
+      audioSrc: book.audioUrl,
+      narrator: book.narrator || 'Professional suxandon'
     };
     playAudio(track);
   };
