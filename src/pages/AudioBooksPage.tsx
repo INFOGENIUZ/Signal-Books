@@ -201,7 +201,7 @@ export const AudioBooksPage: React.FC = () => {
                 className="relative w-56 sm:w-64 aspect-square rounded-2xl overflow-hidden shadow-2xl border border-amber-900/40 cursor-pointer group"
               >
                 <img 
-                  src={featuredBook.coverUrl} 
+                  src={featuredBook.coverUrl || undefined} 
                   alt={featuredBook.title}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -319,7 +319,7 @@ export const AudioBooksPage: React.FC = () => {
                   className="relative w-full aspect-square rounded-xl overflow-hidden bg-black mb-3.5 cursor-pointer shadow-lg group-hover:shadow-2xl transition-shadow"
                 >
                   <img 
-                    src={book.coverUrl} 
+                    src={book.coverUrl || undefined} 
                     alt={book.title} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
@@ -477,7 +477,7 @@ export const AudioBooksPage: React.FC = () => {
 
               <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
                 <iframe
-                  src={`https://drive.google.com/file/d/${dInfo.fileId}/preview`}
+                  src={dInfo.fileId ? `https://drive.google.com/file/d/${dInfo.fileId}/preview` : undefined}
                   className="w-full h-full"
                   allow="autoplay"
                   title={driveEmbedBook.title}

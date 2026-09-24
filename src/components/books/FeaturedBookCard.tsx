@@ -19,7 +19,7 @@ export const FeaturedBookCard: React.FC<FeaturedBookCardProps> = ({ book }) => {
         className="relative w-full sm:w-36 md:w-40 aspect-[3/4] rounded-xl overflow-hidden bg-stone-950 cursor-pointer shrink-0 shadow-lg"
       >
         <img
-          src={book.coverUrl}
+          src={book.coverUrl || undefined}
           alt={book.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"

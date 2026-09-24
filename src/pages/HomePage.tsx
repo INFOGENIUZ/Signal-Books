@@ -234,7 +234,7 @@ export const HomePage: React.FC = () => {
                       className="group flex items-center gap-3 p-3 rounded-2xl bg-[#130E0A]/90 border border-amber-950/80 hover:border-amber-500/50 hover:bg-[#1E1610] transition-all"
                     >
                       <img 
-                        src={book.coverUrl} 
+                        src={book.coverUrl || undefined} 
                         alt={book.title} 
                         className="w-14 h-18 rounded-xl object-cover shadow shrink-0" 
                       />

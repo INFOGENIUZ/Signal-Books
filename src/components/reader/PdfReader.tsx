@@ -383,7 +383,7 @@ export const PdfReader: React.FC = () => {
             {/* Book Info Pill */}
             <div className="flex items-center gap-3 min-w-0">
               <img 
-                src={activeReadingBook.coverUrl} 
+                src={activeReadingBook.coverUrl || undefined} 
                 alt={activeReadingBook.title}
                 className="w-8 h-10 rounded-lg object-cover shadow-md border border-amber-500/30 shrink-0 hidden md:block"
               />
@@ -602,7 +602,7 @@ export const PdfReader: React.FC = () => {
                 >
                   <iframe
                     key={activeReadingBook.id}
-                    src={embedPdfUrl}
+                    src={embedPdfUrl || undefined}
                     title={`${activeReadingBook.title} - To'liq PDF`}
                     className="w-full h-full border-0"
                     style={{

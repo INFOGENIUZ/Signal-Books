@@ -866,7 +866,7 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
               {/* Vinyl record disc peeking out */}
               <div className="relative w-full aspect-square rounded-xl overflow-hidden bg-black shadow-lg">
                 <img 
-                  src={effectiveCoverUrl} 
+                  src={effectiveCoverUrl || undefined} 
                   alt={title || 'Audio kitob'} 
                   className="w-full h-full object-cover"
                 />
@@ -951,7 +951,7 @@ export const AdminAudioBookUploadCard: React.FC<AdminAudioBookUploadCardProps> =
 
             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
               <iframe
-                src={`https://drive.google.com/file/d/${driveInfo.fileId}/preview`}
+                src={driveInfo.fileId ? `https://drive.google.com/file/d/${driveInfo.fileId}/preview` : undefined}
                 className="w-full h-full"
                 allow="autoplay"
                 title="Google Drive Audio Preview"

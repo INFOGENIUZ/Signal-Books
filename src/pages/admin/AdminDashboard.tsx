@@ -961,7 +961,7 @@ export const AdminDashboard: React.FC = () => {
                       </div>
 
                       <img 
-                        src={book.coverUrl} 
+                        src={book.coverUrl || undefined} 
                         alt={book.title}
                         className="w-9 h-12 rounded-lg object-cover border border-amber-950 shrink-0 shadow-sm"
                       />
@@ -1189,7 +1189,7 @@ export const AdminDashboard: React.FC = () => {
                           <td className="py-3.5 px-4 sm:px-6">
                             <div className="flex items-center gap-3.5">
                               <img
-                                src={book.coverUrl}
+                                src={book.coverUrl || undefined}
                                 alt={book.title}
                                 className="w-11 h-15 rounded-xl object-cover shadow-md border border-amber-950/80 shrink-0 group-hover:scale-105 transition-transform"
                               />
@@ -1355,7 +1355,7 @@ export const AdminDashboard: React.FC = () => {
                       {/* Cover & Badges */}
                       <div className="relative aspect-[3/4] w-full rounded-2xl overflow-hidden bg-stone-900 border border-amber-950 shadow-inner">
                         <img 
-                          src={book.coverUrl} 
+                          src={book.coverUrl || undefined} 
                           alt={book.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
@@ -1977,7 +1977,7 @@ export const AdminDashboard: React.FC = () => {
               <div className="p-4 rounded-2xl bg-[#1C140E] border border-amber-500/30 space-y-3.5 shadow-xl">
                 <div className="relative aspect-[3/4] w-full rounded-xl overflow-hidden bg-stone-900 border border-amber-950 shadow-inner">
                   <img 
-                    src={autoCoverPreview} 
+                    src={autoCoverPreview || undefined} 
                     alt="Titul 1-sahifa muqovasi"
                     className="w-full h-full object-cover"
                     referrerPolicy="no-referrer"

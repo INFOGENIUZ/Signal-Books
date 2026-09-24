@@ -108,7 +108,7 @@ export const BookShowcaseSlider: React.FC<BookShowcaseSliderProps> = ({ books })
         <AnimatePresence mode="wait">
           <motion.img
             key={currentBook.id + '-ambient'}
-            src={currentBook.coverUrl}
+            src={currentBook.coverUrl || undefined}
             alt=""
             initial={{ opacity: 0, scale: 1.2 }}
             animate={{ opacity: 0.3, scale: 1.1 }}
@@ -191,7 +191,7 @@ export const BookShowcaseSlider: React.FC<BookShowcaseSliderProps> = ({ books })
                   className="relative w-32 sm:w-40 md:w-44 aspect-[2/3] rounded-xl overflow-hidden shadow-[0_15px_35px_rgba(0,0,0,0.9),0_0_25px_rgba(245,158,11,0.25)] bg-[#120B07] cursor-pointer transform-gpu"
                 >
                   <img
-                    src={currentBook.coverUrl}
+                    src={currentBook.coverUrl || undefined}
                     alt={currentBook.title}
                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     loading="eager"

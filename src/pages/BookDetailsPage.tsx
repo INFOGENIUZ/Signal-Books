@@ -139,7 +139,7 @@ export const BookDetailsPage: React.FC = () => {
         <div className="lg:col-span-4 flex flex-col items-center">
           <div className="relative w-full max-w-sm aspect-[3/4] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] border border-amber-500/30 group">
             <img
-              src={selectedBook.coverUrl}
+              src={selectedBook.coverUrl || undefined}
               alt={selectedBook.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             />
@@ -477,7 +477,7 @@ export const BookDetailsPage: React.FC = () => {
 
             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
               <iframe
-                src={`https://drive.google.com/file/d/${driveInfo.fileId}/preview`}
+                src={driveInfo.fileId ? `https://drive.google.com/file/d/${driveInfo.fileId}/preview` : undefined}
                 className="w-full h-full"
                 allow="autoplay"
                 title={selectedBook.title}

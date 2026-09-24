@@ -128,7 +128,7 @@ export const AudioPlayer: React.FC = () => {
         {/* Real audio element */}
         <audio
           ref={htmlAudioRef}
-          src={directAudioSrc}
+          src={directAudioSrc || undefined}
           preload="auto"
           onWaiting={() => setIsLoadingAudio(true)}
           onPlaying={() => {
@@ -186,7 +186,7 @@ export const AudioPlayer: React.FC = () => {
           <div className="flex items-center gap-3 min-w-0 max-w-[150px] xs:max-w-[200px] sm:max-w-sm">
             <div className="relative w-11 h-11 rounded-xl overflow-hidden bg-black shrink-0 border border-amber-900/40 shadow-md">
               <img 
-                src={activeAudioTrack.coverUrl} 
+                src={activeAudioTrack.coverUrl || undefined} 
                 alt={activeAudioTrack.title} 
                 className={`w-full h-full object-cover transition-transform ${isPlayingAudio ? 'scale-105' : ''}`}
               />
@@ -374,7 +374,7 @@ export const AudioPlayer: React.FC = () => {
 
             <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
               <iframe
-                src={`https://drive.google.com/file/d/${driveInfo.fileId}/preview`}
+                src={driveInfo.fileId ? `https://drive.google.com/file/d/${driveInfo.fileId}/preview` : undefined}
                 className="w-full h-full"
                 allow="autoplay"
                 title={activeAudioTrack.title}

@@ -33,7 +33,7 @@ export const HistoryPage: React.FC = () => {
                 <div className="flex items-center gap-4 w-full sm:w-auto min-w-0">
                   <div className="relative shrink-0">
                     <img
-                      src={item.coverUrl}
+                      src={item.coverUrl || undefined}
                       alt={item.bookTitle}
                       className="w-16 h-24 rounded-xl object-cover shadow-lg border border-amber-500/30 group-hover:scale-105 transition-transform"
                     />
