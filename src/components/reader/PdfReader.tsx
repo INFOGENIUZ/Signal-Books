@@ -41,6 +41,7 @@ export const PdfReader: React.FC = () => {
     activeReadingBook, 
     activeReadingPage, 
     closeReader, 
+    setActivePage,
     updateReadingProgress,
     favorites,
     toggleFavorite,
@@ -277,9 +278,12 @@ export const PdfReader: React.FC = () => {
     setTimeout(() => setJustBookmarked(false), 2500);
   };
 
-  // Safe Close Handler
+  // Safe Close Handler - guarantees complete exit back to main library
   const handleClose = () => {
+    TelegramService.hapticSelection();
     closeReader();
+    setActivePage('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const toggleFullscreen = () => {
@@ -367,16 +371,16 @@ export const PdfReader: React.FC = () => {
     >
       {/* 1. TOP CREATIVE HUD TOOLBAR (Collapsible in Focus Mode) */}
       {!isFocusMode && (
-        <header className={`h-16 px-3 sm:px-6 flex items-center justify-between border-b ${currentThemeStyles.header} backdrop-blur-2xl z-30 shrink-0 gap-3 shadow-xl transition-all duration-300 relative`}>
+        <header className={`h-16 px-3 sm:px-6 flex items-center justify-between border-b ${currentThemeStyles.header} backdrop-blur-2xl z-30 shrink-0 gap-2 sm:gap-3 shadow-xl transition-all duration-300 relative`}>
           {/* Left: Back button & Book Metadata */}
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
             <button
               onClick={handleClose}
-              className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-950/40 hover:bg-amber-500/20 text-stone-300 hover:text-amber-300 border border-amber-900/60 hover:border-amber-500/50 text-xs font-semibold transition-all shrink-0 hover:scale-[1.02] active:scale-95"
-              title="Kutubxonaga qaytish"
+              className="group flex items-center gap-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-extrabold text-xs shadow-[0_0_15px_rgba(245,158,11,0.4)] transition-all shrink-0 hover:scale-[1.03] active:scale-95 cursor-pointer font-heading"
+              title="Asosiy menyuga qaytish"
             >
-              <ArrowLeft className="w-4 h-4 text-amber-400 group-hover:-translate-x-0.5 transition-transform" />
-              <span className="hidden sm:inline">Orqaga</span>
+              <ArrowLeft className="w-4 h-4 text-stone-950 stroke-[2.5] group-hover:-translate-x-0.5 transition-transform" />
+              <span className="inline font-bold">Chiqish</span>
             </button>
 
             <div className="h-6 w-[1px] bg-amber-900/40 hidden sm:block shrink-0" />
@@ -672,10 +676,21 @@ export const PdfReader: React.FC = () => {
 
             {/* 5. FLOATING MOBILE TOUCH HUD (Always accessible on phone viewports) */}
             {!isFocusMode && (
-              <div className="sm:hidden absolute bottom-4 inset-x-3 z-30 flex flex-col gap-2">
-                <div className="flex items-center justify-between bg-[#150F0A]/95 border border-amber-500/40 px-3 py-2 rounded-2xl backdrop-blur-2xl shadow-2xl">
-                  {/* Left: Mobile Zoom Control Unit (Exact 1% step per click + hold-to-zoom) */}
-                  <div className="flex items-center gap-1.5 bg-[#1C140E]/90 p-1 rounded-xl border border-amber-500/30 shadow-inner">
+              <div className="sm:hidden absolute bottom-4 inset-x-2 z-30 flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-1.5 bg-[#150F0A]/95 border border-amber-500/40 px-2 py-1.5 rounded-2xl backdrop-blur-2xl shadow-2xl">
+                  {/* Left: Back/Exit to Home Button */}
+                  <button
+                    type="button"
+                    onClick={handleClose}
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 font-extrabold text-[11px] shadow-[0_0_12px_rgba(245,158,11,0.35)] transition-all active:scale-95 cursor-pointer font-heading shrink-0"
+                    title="Bosh sahifaga qaytish"
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-stone-950 stroke-[2.5]" />
+                    <span>Orqaga</span>
+                  </button>
+
+                  {/* Center: Mobile Zoom Control Unit (Centered) */}
+                  <div className="flex items-center gap-1 bg-[#1C140E]/90 p-1 rounded-xl border border-amber-500/30 shadow-inner">
                     {/* Zoom Out (-1%) */}
                     <button
                       type="button"
@@ -686,18 +701,18 @@ export const PdfReader: React.FC = () => {
                       onTouchStart={() => startZoomHold('out')}
                       onTouchEnd={stopZoomHold}
                       disabled={zoomScale <= 50}
-                      className="w-8 h-8 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
+                      className="w-7 h-7 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
                       title="Uzoqlashtirish (-1%)"
                       aria-label="Uzoqlashtirish (-1%)"
                     >
-                      <ZoomOut className="w-4 h-4" />
+                      <ZoomOut className="w-3.5 h-3.5" />
                     </button>
 
                     {/* Zoom Percentage Badge (Click to reset to 100%) */}
                     <button
                       type="button"
                       onClick={resetZoom}
-                      className="px-2.5 py-1 rounded-lg bg-black/60 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-mono font-bold text-xs min-w-[56px] text-center transition-all active:scale-95 shadow-sm"
+                      className="px-2 py-1 rounded-lg bg-black/60 hover:bg-amber-500/20 active:bg-amber-500/30 border border-amber-500/40 text-amber-300 font-mono font-bold text-[11px] min-w-[46px] text-center transition-all active:scale-95 shadow-sm"
                       title="100% asliga qaytarish"
                     >
                       {zoomScale}%
@@ -713,33 +728,33 @@ export const PdfReader: React.FC = () => {
                       onTouchStart={() => startZoomHold('in')}
                       onTouchEnd={stopZoomHold}
                       disabled={zoomScale >= 300}
-                      className="w-8 h-8 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
+                      className="w-7 h-7 rounded-lg bg-amber-950/70 hover:bg-amber-500/25 active:bg-amber-500/35 text-amber-300 flex items-center justify-center disabled:opacity-25 disabled:pointer-events-none transition-all active:scale-90 border border-amber-900/50"
                       title="Yaqinlashtirish (+1%)"
                       aria-label="Yaqinlashtirish (+1%)"
                     >
-                      <ZoomIn className="w-4 h-4" />
+                      <ZoomIn className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
                   {/* Right: Quick Bookmark & Fullscreen */}
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1 shrink-0">
                     <button
                       onClick={handleBookmarkCurrentPage}
-                      className={`p-2 rounded-xl border transition-all active:scale-95 ${
+                      className={`p-1.5 rounded-xl border transition-all active:scale-95 ${
                         justBookmarked
                           ? 'bg-emerald-500/30 border-emerald-500 text-emerald-400'
                           : 'bg-amber-500/20 border-amber-500/40 text-amber-400'
                       }`}
                       title="Kelgan sahifangizni saqlash"
                     >
-                      <Bookmark className={`w-4 h-4 ${justBookmarked ? 'fill-emerald-400' : 'fill-amber-400'}`} />
+                      <Bookmark className={`w-3.5 h-3.5 ${justBookmarked ? 'fill-emerald-400' : 'fill-amber-400'}`} />
                     </button>
                     <button
                       onClick={toggleFullscreen}
-                      className="p-2 rounded-xl bg-amber-500 text-stone-950 font-bold active:scale-95 shadow-md"
+                      className="p-1.5 rounded-xl bg-amber-500 text-stone-950 font-bold active:scale-95 shadow-md"
                       title="To‘liq ekran"
                     >
-                      {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                      {isFullscreen ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
                     </button>
                   </div>
                 </div>

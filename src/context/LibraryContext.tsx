@@ -377,24 +377,29 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const playAudio = async (track: AudioTrack) => {
     let effectiveSrc = track.audioSrc;
-    if (!effectiveSrc && track.bookId) {
+    if ((!effectiveSrc || effectiveSrc.startsWith('audio-')) && track.bookId) {
       const b = books.find(item => item.id === track.bookId);
       if (b) {
-        effectiveSrc = b.audioUrl || (b.googleDriveUrl ? getDirectAudioUrl(b.googleDriveUrl) : '');
+        effectiveSrc = b.audioUrl || b.googleDriveUrl || effectiveSrc;
       }
     }
 
-    let finalSrc = effectiveSrc || track.audioSrc;
-    if (finalSrc && (finalSrc.startsWith('audio-') || finalSrc.startsWith('local-audio-'))) {
+    let finalSrc = effectiveSrc || track.audioSrc || '';
+    if (finalSrc && (finalSrc.startsWith('local-audio-') || finalSrc.startsWith('audio-storage-'))) {
       try {
         const dbUrl = await AudioStorageService.getAudioUrl(finalSrc);
         if (dbUrl) {
           finalSrc = dbUrl;
+        } else if (track.bookId) {
+          const b = books.find(item => item.id === track.bookId);
+          if (b) finalSrc = b.audioUrl || b.googleDriveUrl || '';
         }
       } catch (err) {
         console.warn('AudioStorageService lookup warning:', err);
       }
-    } else if (finalSrc) {
+    }
+
+    if (finalSrc && !finalSrc.startsWith('blob:') && !finalSrc.startsWith('data:')) {
       finalSrc = getDirectAudioUrl(finalSrc);
     }
 

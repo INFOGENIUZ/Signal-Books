@@ -68,9 +68,9 @@ export const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Dynamic Animated Book Showcase Slider (Auto-slides every 3-4s, gesture drag/swipe) */}
+      {/* Dynamic Animated Book Showcase Slider (Positioned nicely below search bar) */}
       {books.length > 0 && (
-        <div className="pt-6 sm:pt-10 md:pt-12">
+        <div className="pt-8 sm:pt-14 md:pt-16 mt-4">
           <BookShowcaseSlider books={books} />
         </div>
       )}

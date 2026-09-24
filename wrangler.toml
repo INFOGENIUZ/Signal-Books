@@ -1,0 +1,23 @@
+name = "signal-books-ai-worker"
+main = "cloudflare-worker.js"
+compatibility_date = "2024-09-24"
+
+# Cloudflare Workers AI Binding
+[ai]
+binding = "AI"
+
+# Cloudflare D1 Database Binding
+[[d1_databases]]
+binding = "DB"
+database_name = "signal_books_ai_db"
+database_id = "your-d1-database-id-here"
+
+# Cloudflare R2 Bucket Binding (for storage)
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "signal-books-storage"
+
+# Cloudflare AI Search Vector / Knowledge Index (Optional)
+# [vectorize]
+# binding = "VECTOR_INDEX"
+# index_name = "signal-books-knowledge-index"

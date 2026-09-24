@@ -9,6 +9,7 @@ import { AudioPlayer } from './components/audio/AudioPlayer';
 import { MobileBottomNav } from './components/common/MobileBottomNav';
 import { AuthModal } from './components/auth/AuthModal';
 import { AnimatedAtmosphere } from './components/common/AnimatedAtmosphere';
+import { AiChatDrawer } from './components/ai/AiChatDrawer';
 
 // Pages
 import { HomePage } from './pages/HomePage';
@@ -98,6 +99,9 @@ const MainLayout: React.FC = () => {
 
       {/* Mobile Bottom Navigation Bar (Visible on phone/tablet screens) */}
       <MobileBottomNav />
+
+      {/* Signal Books Floating AI Knowledge Assistant */}
+      {!activeReadingBook && <AiChatDrawer />}
     </div>
   );
 };

@@ -346,12 +346,14 @@ export function getGoogleDrivePreviewUrl(urlOrFileId?: string): string {
 export function getDirectAudioUrl(urlOrFileId?: string): string {
   if (!urlOrFileId) return '';
   const trimmed = urlOrFileId.trim();
+  if (!trimmed) return '';
   if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) {
     return trimmed;
   }
   const driveInfo = parseGoogleDriveUrl(trimmed);
   if (driveInfo.isDrive && driveInfo.fileId) {
-    return `/api/drive-audio?id=${driveInfo.fileId}`;
+    // Direct Google Drive CDN audio stream URL compatible with static Vercel and Node environments
+    return `https://lh3.googleusercontent.com/d/${driveInfo.fileId}`;
   }
   return trimmed;
 }

@@ -37,7 +37,8 @@ import {
   Wind,
   RefreshCw,
   Bell,
-  Menu
+  Menu,
+  Bot
 } from 'lucide-react';
 
 /**
@@ -71,6 +72,9 @@ export const ICON_3D_MAP: Record<string, string> = {
   bell: 'https://img.icons8.com/3d-fluency/94/alarm.png',
   telegram: 'https://img.icons8.com/3d-fluency/94/telegram.png',
   sparkles: 'https://img.icons8.com/3d-fluency/94/sparkles.png',
+  bot: 'https://img.icons8.com/3d-fluency/94/bot.png',
+  robot: 'https://img.icons8.com/3d-fluency/94/robot.png',
+  ai: 'https://img.icons8.com/3d-fluency/94/bot.png',
   'check-mark': 'https://img.icons8.com/3d-fluency/94/checkmark.png',
   chat: 'https://img.icons8.com/3d-fluency/94/speech-bubble.png',
   sent: 'https://img.icons8.com/3d-fluency/94/paper-plane.png',
@@ -136,6 +140,9 @@ const LUCIDE_FALLBACKS: Record<string, React.ComponentType<{ className?: string 
   drive: HardDrive,
   menu: Menu,
   bell: Bell,
+  bot: Bot,
+  robot: Bot,
+  ai: Bot,
   sun: Sun,
   moon: Moon,
   cloud: Cloud,

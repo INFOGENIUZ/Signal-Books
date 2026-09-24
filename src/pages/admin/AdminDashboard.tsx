@@ -70,6 +70,7 @@ import { parseGoogleDriveUrl, GoogleDriveParsedInfo, generateFirstPageBookCover 
 import { AiBookAnalysisCard } from '../../components/admin/AiBookAnalysisCard';
 import { AiBookAnalysisResult, analyzeBookWithAI } from '../../services/aiBookAnalysisService';
 import { AdminAudioBookUploadCard } from '../../components/admin/AdminAudioBookUploadCard';
+import { AdminAiKnowledgePanel } from '../../components/admin/AdminAiKnowledgePanel';
 
 const CATEGORY_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
   BookOpen: BookText,
@@ -142,7 +143,7 @@ export const AdminDashboard: React.FC = () => {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
 
   // Dashboard tab and view states
-  const [activeAdminTab, setActiveAdminTab] = useState<'stats' | 'books' | 'categories' | 'add' | 'add-audio'>('stats');
+  const [activeAdminTab, setActiveAdminTab] = useState<'stats' | 'books' | 'categories' | 'add' | 'add-audio' | 'ai-knowledge'>('stats');
   const [booksViewMode, setBooksViewMode] = useState<'table' | 'grid'>('table');
   
   // Books list filter & sort states
@@ -765,6 +766,23 @@ export const AdminDashboard: React.FC = () => {
                 activeAdminTab === 'add-audio' ? 'bg-stone-950/40 text-stone-950' : 'bg-orange-500/20 text-orange-300 border border-orange-500/30'
               }`}>
                 Yangi 🎧
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveAdminTab('ai-knowledge')}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                activeAdminTab === 'ai-knowledge' 
+                  ? 'bg-gradient-to-r from-amber-400 via-amber-500 to-orange-500 text-stone-950 shadow-md shadow-amber-500/30' 
+                  : 'text-stone-400 hover:text-stone-100 hover:bg-stone-800/40'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>AI Bilim Bazasi & RAG</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                activeAdminTab === 'ai-knowledge' ? 'bg-stone-950/40 text-stone-950' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+              }`}>
+                AI 🤖
               </span>
             </button>
           </div>
@@ -2049,6 +2067,13 @@ export const AdminDashboard: React.FC = () => {
           showToast={showToast}
           onCancel={() => setActiveAdminTab('books')}
         />
+      )}
+
+      {/* ============================================================== */}
+      {/* 6.2 AI KNOWLEDGE BASE & RAG ANALYTICS PANEL */}
+      {/* ============================================================== */}
+      {activeAdminTab === 'ai-knowledge' && (
+        <AdminAiKnowledgePanel />
       )}
 
       {/* ============================================================== */}

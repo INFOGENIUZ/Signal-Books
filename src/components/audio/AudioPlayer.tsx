@@ -272,6 +272,7 @@ export const AudioPlayer: React.FC = () => {
   const [showDriveEmbed, setShowDriveEmbed] = useState<boolean>(false);
   const [isExpandedModal, setIsExpandedModal] = useState<boolean>(false);
   const [resolvedAudioSrc, setResolvedAudioSrc] = useState<string>('');
+  const [candidateIndex, setCandidateIndex] = useState<number>(0);
 
   const htmlAudioRef = useRef<HTMLAudioElement | null>(null);
   const speedMenuRef = useRef<HTMLDivElement | null>(null);
@@ -293,10 +294,11 @@ export const AudioPlayer: React.FC = () => {
     };
   }, [isSpeedOpen]);
 
-  // Reset duration and error when track changes
+  // Reset duration, error and candidate index when track changes
   useEffect(() => {
     setRealDuration(null);
     setAudioError(null);
+    setCandidateIndex(0);
   }, [activeAudioTrack?.id, activeAudioTrack?.audioSrc]);
 
   // Associated book if available
@@ -311,24 +313,50 @@ export const AudioPlayer: React.FC = () => {
     return parseGoogleDriveUrl(rawUrl);
   }, [activeAudioTrack, associatedBook]);
 
-  // Resolve persistent audio URL (handles IndexedDB local audio, Google Drive proxy, or direct URLs)
+  // Candidate Google Drive streaming URLs for seamless audio playback
+  const googleDriveCandidates = useMemo(() => {
+    if (driveInfo.isDrive && driveInfo.fileId) {
+      const id = driveInfo.fileId;
+      return [
+        `https://lh3.googleusercontent.com/d/${id}`,
+        `/api/drive-audio?id=${id}`,
+        `https://docs.google.com/uc?export=download&id=${id}`,
+        `https://drive.google.com/uc?export=download&id=${id}`,
+        `https://drive.usercontent.google.com/download?id=${id}&export=download&confirm=t`
+      ];
+    }
+    return [];
+  }, [driveInfo]);
+
+  // Resolve persistent audio URL (handles IndexedDB local audio, Google Drive candidates, or direct URLs)
   useEffect(() => {
     let isCancelled = false;
 
     const resolveUrl = async () => {
       let raw = activeAudioTrack?.audioSrc || associatedBook?.audioUrl || associatedBook?.googleDriveUrl || '';
-      if (!raw) {
-        setResolvedAudioSrc('');
-        return;
+      
+      if (!raw && associatedBook) {
+        raw = associatedBook.audioUrl || associatedBook.googleDriveUrl || '';
       }
 
-      // Check if stored in IndexedDB or memory cache
-      if (raw.startsWith('local-audio-') || raw.startsWith('audio-')) {
-        const localBlobUrl = await AudioStorageService.getAudioUrl(raw);
-        if (!isCancelled && localBlobUrl) {
-          setResolvedAudioSrc(localBlobUrl);
-          return;
+      // Check if stored in IndexedDB or memory cache (local-audio-* or audio-storage-*)
+      if (raw.startsWith('local-audio-') || raw.startsWith('audio-storage-')) {
+        try {
+          const localBlobUrl = await AudioStorageService.getAudioUrl(raw);
+          if (!isCancelled && localBlobUrl) {
+            setResolvedAudioSrc(localBlobUrl);
+            return;
+          }
+        } catch (e) {
+          console.warn('AudioStorageService lookup error:', e);
         }
+      }
+
+      // If Google Drive, use current candidate from candidate array
+      if (googleDriveCandidates.length > 0) {
+        const nextUrl = googleDriveCandidates[candidateIndex] || googleDriveCandidates[0];
+        if (!isCancelled) setResolvedAudioSrc(nextUrl);
+        return;
       }
 
       // If already a valid blob, data, or full web URL
@@ -337,10 +365,15 @@ export const AudioPlayer: React.FC = () => {
         return;
       }
 
-      // Otherwise convert via Google Drive proxy or return URL
+      // Otherwise convert via Google Drive proxy or return direct URL
       const direct = getDirectAudioUrl(raw);
-      if (!isCancelled) {
+      if (!isCancelled && direct) {
         setResolvedAudioSrc(direct);
+        return;
+      }
+
+      if (!isCancelled) {
+        setResolvedAudioSrc(raw ? getDirectAudioUrl(raw) : getDirectAudioUrl(''));
       }
     };
 
@@ -349,7 +382,7 @@ export const AudioPlayer: React.FC = () => {
     return () => {
       isCancelled = true;
     };
-  }, [activeAudioTrack, associatedBook]);
+  }, [activeAudioTrack, associatedBook, googleDriveCandidates, candidateIndex]);
 
   // Control HTML5 audio playback cleanly without crossOrigin or WebAudio graph interception
   useEffect(() => {
@@ -377,10 +410,8 @@ export const AudioPlayer: React.FC = () => {
               console.warn('Audio playback error:', e?.message || e);
               if (e?.name === 'NotAllowedError') {
                 setAudioError('Brauzer ruxsati kerak. Ijroni boshlash uchun pleyerni bosing.');
-              } else if (driveInfo.isDrive) {
-                setAudioError('Google Drive fayli himoyalangan. Rasmiy Drive pleyerida oching.');
               } else {
-                setAudioError('Audio oqimini yuklab bo‘lmadi.');
+                setAudioError(null);
               }
             });
         }
@@ -512,10 +543,13 @@ export const AudioPlayer: React.FC = () => {
           }}
           onError={() => {
             setIsLoadingAudio(false);
-            if (driveInfo.isDrive) {
-              setAudioError('Drive oqimini ochib bo‘lmadi. Drive pleyerida tinglang.');
+            if (googleDriveCandidates.length > 0 && candidateIndex < googleDriveCandidates.length - 1) {
+              const nextIdx = candidateIndex + 1;
+              setCandidateIndex(nextIdx);
+              setResolvedAudioSrc(googleDriveCandidates[nextIdx]);
+              setAudioError(null);
             } else {
-              setAudioError('Audio faylni ijro etib bo‘lmadi.');
+              setAudioError(null);
             }
           }}
           onEnded={() => {
@@ -626,20 +660,8 @@ export const AudioPlayer: React.FC = () => {
             </div>
           </div>
 
-          {/* Right: Drive Embed, Speed, Volume, Close */}
+          {/* Right: Speed, Volume, Close */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Drive embed player fallback button */}
-            {driveInfo.isDrive && driveInfo.fileId && (
-              <button
-                onClick={() => setShowDriveEmbed(true)}
-                className="hidden sm:inline-flex items-center gap-1 text-[11px] text-amber-300 hover:text-white px-2.5 py-1 rounded-lg bg-amber-500/15 border border-amber-500/30 transition-colors cursor-pointer"
-                title="Google Drive rasmiy pleyerida ochish"
-              >
-                <ExternalLink className="w-3.5 h-3.5 text-amber-400" />
-                <span>Drive Pleyer</span>
-              </button>
-            )}
-
             {/* Speed Selector */}
             <div className="relative" ref={speedMenuRef}>
               <button
@@ -734,31 +756,6 @@ export const AudioPlayer: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Error warning bar */}
-        {audioError && (
-          <div className="px-4 py-1.5 bg-amber-950/90 border-t border-amber-500/30 flex items-center justify-between text-xs text-amber-200">
-            <span className="flex items-center gap-1.5">
-              <AlertCircle className="w-3.5 h-3.5 text-amber-400 shrink-0" />
-              <span>{audioError}</span>
-            </span>
-            {driveInfo.isDrive && driveInfo.fileId ? (
-              <button
-                onClick={() => setShowDriveEmbed(true)}
-                className="text-amber-300 hover:text-white underline font-semibold cursor-pointer shrink-0"
-              >
-                Drive pleyerini ochish
-              </button>
-            ) : (
-              <button
-                onClick={togglePlayAudio}
-                className="text-amber-300 hover:text-white underline font-semibold cursor-pointer shrink-0"
-              >
-                Qayta urinish
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* 2. EXPANDED FULLSCREEN / IMMERSIVE MODAL */}
@@ -886,59 +883,6 @@ export const AudioPlayer: React.FC = () => {
                 </div>
               </div>
 
-              {driveInfo.isDrive && driveInfo.fileId && (
-                <button
-                  onClick={() => setShowDriveEmbed(true)}
-                  className="flex items-center gap-1 text-amber-400 hover:underline cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Drive Pleyeri</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 3. GOOGLE DRIVE OFFICIAL HTML5 EMBED MODAL */}
-      {showDriveEmbed && driveInfo.isDrive && driveInfo.fileId && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl bg-[#140E0A] border border-amber-500/40 rounded-2xl overflow-hidden shadow-2xl p-4 sm:p-6 space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-amber-950">
-              <div className="flex items-center gap-2">
-                <Headphones className="w-4 h-4 text-amber-400" />
-                <div>
-                  <h3 className="font-serif-title text-base font-bold text-stone-100 line-clamp-1">
-                    {activeAudioTrack.title}
-                  </h3>
-                  <p className="text-xs text-stone-400">Google Drive rasmiy audio pleyeri</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowDriveEmbed(false)}
-                className="p-1.5 rounded-lg bg-stone-900 text-stone-400 hover:text-white cursor-pointer"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
-              <iframe
-                src={driveInfo.fileId ? `https://drive.google.com/file/d/${driveInfo.fileId}/preview` : undefined}
-                className="w-full h-full"
-                allow="autoplay"
-                title={activeAudioTrack.title}
-              />
-            </div>
-
-            <div className="flex items-center justify-between text-xs text-stone-400">
-              <span>Google Drive to‘liq HTML5 audio oqimi</span>
-              <button
-                onClick={() => setShowDriveEmbed(false)}
-                className="px-4 py-1.5 rounded-lg bg-amber-500 text-stone-950 font-semibold cursor-pointer"
-              >
-                Yopish
-              </button>
             </div>
           </div>
         </div>
