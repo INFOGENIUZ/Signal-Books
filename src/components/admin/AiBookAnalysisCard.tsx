@@ -17,7 +17,8 @@ import {
   FileCheck,
   Tag,
   Clock,
-  Wand2
+  Wand2,
+  Key
 } from 'lucide-react';
 import { Category } from '../../types';
 import { AiBookAnalysisResult, analyzeBookWithAI } from '../../services/aiBookAnalysisService';
@@ -45,7 +46,21 @@ export const AiBookAnalysisCard: React.FC<AiBookAnalysisCardProps> = ({
   const [showHintInput, setShowHintInput] = useState(false);
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [uploadedBase64, setUploadedBase64] = useState<string | null>(null);
+  const [groqApiKey, setGroqApiKey] = useState(() => localStorage.getItem('groq_api_key') || '');
+  const [showApiKeySetting, setShowApiKeySetting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSaveGroqKey = (val: string) => {
+    const trimmed = val.trim();
+    setGroqApiKey(trimmed);
+    if (trimmed) {
+      localStorage.setItem('groq_api_key', trimmed);
+      showToast('Groq API kaliti saqlandi', 'success');
+    } else {
+      localStorage.removeItem('groq_api_key');
+      showToast('Groq API kaliti olib tashlandi', 'info');
+    }
+  };
 
   // Trigger AI Analysis
   const handleStartAnalysis = async (overrideBase64?: string, overrideHint?: string) => {
@@ -58,7 +73,10 @@ export const AiBookAnalysisCard: React.FC<AiBookAnalysisCardProps> = ({
     setAnalysisError(null);
 
     const hintToUse = overrideHint !== undefined ? overrideHint : (customHint.trim() || currentTitle || '');
-    const base64ToUse = overrideBase64 || uploadedBase64 || undefined;
+    let base64ToUse = overrideBase64 || uploadedBase64 || undefined;
+    if (base64ToUse && base64ToUse.length > 2.5 * 1024 * 1024) {
+      base64ToUse = base64ToUse.slice(0, 2.5 * 1024 * 1024);
+    }
 
     try {
       const res = await analyzeBookWithAI({
@@ -103,7 +121,11 @@ export const AiBookAnalysisCard: React.FC<AiBookAnalysisCardProps> = ({
 
     const reader = new FileReader();
     reader.onload = () => {
-      const base64 = reader.result as string;
+      let base64 = reader.result as string;
+      // Vercel serverless request body has 4.5MB limit. Slice base64 if oversized
+      if (base64.length > 2.5 * 1024 * 1024) {
+        base64 = base64.slice(0, 2.5 * 1024 * 1024);
+      }
       setUploadedBase64(base64);
       showToast(`«${file.name}» tanlandi. AI tahlili boshlanmoqda...`, 'info');
       // Auto-trigger analysis for uploaded PDF
@@ -177,12 +199,69 @@ export const AiBookAnalysisCard: React.FC<AiBookAnalysisCardProps> = ({
             type="button"
             onClick={() => fileInputRef.current?.click()}
             title="Kompyuterdan PDF tanlab tahlil qilish"
-            className="p-2.5 rounded-2xl bg-[#281B12] hover:bg-[#342318] text-amber-300 hover:text-white border border-amber-500/30 transition-colors active:scale-95"
+            className="p-2.5 rounded-2xl bg-[#281B12] hover:bg-[#342318] text-amber-300 hover:text-white border border-amber-500/30 transition-colors active:scale-95 cursor-pointer"
           >
             <Upload className="w-4 h-4" />
           </button>
+
+          {/* Vercel / Groq API key configuration toggle */}
+          <button
+            type="button"
+            onClick={() => setShowApiKeySetting(prev => !prev)}
+            title="Groq API / Vercel sozlamalari"
+            className={`p-2.5 rounded-2xl border transition-colors active:scale-95 cursor-pointer ${
+              groqApiKey 
+                ? 'bg-emerald-950/60 hover:bg-emerald-900/60 text-emerald-300 border-emerald-500/40' 
+                : 'bg-[#281B12] hover:bg-[#342318] text-amber-300 hover:text-white border-amber-500/30'
+            }`}
+          >
+            <Key className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      {/* Groq API Key / Vercel Settings Panel */}
+      {showApiKeySetting && (
+        <div className="p-3.5 rounded-2xl bg-[#23170e] border border-amber-500/30 space-y-2.5 text-xs animate-in fade-in duration-200">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-amber-300 flex items-center gap-1.5">
+              <Key className="w-3.5 h-3.5 text-amber-400" />
+              Groq API Kaliti (Vercel & Bulut uchun)
+            </span>
+            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+              {groqApiKey ? 'Faol' : 'Avtomatik Smart Classifier'}
+            </span>
+          </div>
+          <p className="text-[11px] text-stone-300 leading-relaxed">
+            Vercel deploy qilganda AI to‘liq ishlashi uchun Groq API kalitini shu yerga kiritishingiz mumkin (yoki Vercel Project Settings da <code className="text-amber-300 bg-black/40 px-1 py-0.5 rounded font-mono">GROQ_API_KEY</code> qo‘shishingiz mumkin). Agar kalit bo‘lmasa ham, o‘rnatilgan aqlli tahlil mexanizmi (smart classifier) uzluksiz ishlaydi.
+          </p>
+          <div className="flex items-center gap-2">
+            <input
+              type="password"
+              placeholder="gsk_..."
+              value={groqApiKey}
+              onChange={(e) => setGroqApiKey(e.target.value)}
+              className="flex-1 px-3 py-1.5 rounded-xl bg-black/40 border border-amber-500/30 text-stone-100 placeholder-stone-500 text-xs font-mono focus:outline-none focus:border-amber-400"
+            />
+            <button
+              type="button"
+              onClick={() => handleSaveGroqKey(groqApiKey)}
+              className="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-colors cursor-pointer"
+            >
+              Saqlash
+            </button>
+            {groqApiKey && (
+              <button
+                type="button"
+                onClick={() => handleSaveGroqKey('')}
+                className="px-2.5 py-1.5 rounded-xl bg-red-950/40 hover:bg-red-900/40 border border-red-500/30 text-red-300 text-xs transition-colors cursor-pointer"
+              >
+                O‘chirish
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Selected file indicator if local PDF chosen */}
       {selectedFileName && (
