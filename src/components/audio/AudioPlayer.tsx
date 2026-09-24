@@ -470,7 +470,7 @@ export const AudioPlayer: React.FC = () => {
   return (
     <>
       {/* 1. BOTTOM DOCKED LUXURY AUDIO PLAYER */}
-      <div className="fixed bottom-[50px] sm:bottom-[54px] lg:bottom-2 inset-x-2 sm:inset-x-4 lg:left-[272px] lg:right-4 z-40 bg-[#120B07]/95 backdrop-blur-2xl border border-amber-900/50 rounded-2xl shadow-[0_15px_60px_rgba(0,0,0,0.95)] text-white animate-in fade-in slide-in-from-bottom-3 duration-300">
+      <div className="fixed bottom-[72px] sm:bottom-[78px] lg:bottom-6 inset-x-2 sm:inset-x-4 lg:left-[272px] lg:right-6 z-40 bg-[#120B07]/95 backdrop-blur-2xl border border-amber-900/50 rounded-2xl shadow-[0_15px_60px_rgba(0,0,0,0.95)] text-white animate-in fade-in slide-in-from-bottom-3 duration-300">
         
         {/* Real HTML5 Audio Element - Standard, direct playback without CORS blocks */}
         <audio
