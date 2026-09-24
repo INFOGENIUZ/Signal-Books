@@ -119,133 +119,241 @@ export function generateFirstPageBookCover(
 }
 
 /**
- * Generates a luxury SVG Data URL specifically for Audio Books
- * Contains headphones emblem, sound waves, author and narrator credentials.
+ * Generates a luxury Square (1:1) SVG Data URL specifically for Audio Books
+ * Designed with vinyl grooves, gold rim lighting, headphones emblem, and studio credentials.
+ */
+/**
+ * Generates an ultra-crisp, high-fidelity luxury Audiobook cover in pure SVG (no foreignObject)
+ * Perfectly compatible with all browser <img> tags without security restrictions.
  */
 export function generateAudioBookCover(
-  title: string = 'Audio Kitob',
-  author: string = 'Muallif',
+  title: string,
+  author: string,
   narrator: string = 'Professional suxandon',
-  category: string = 'Audio kitoblar',
-  year: number = new Date().getFullYear()
+  category: string = 'Badiiy adabiyot',
+  year: number = new Date().getFullYear(),
+  style: 'gold' | 'emerald' | 'sapphire' | 'violet' = 'gold'
 ): string {
-  const safeTitle = (title || 'Audio Kitob').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeAuthor = (author || 'Muallif').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeNarrator = (narrator || 'Professional suxandon').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const safeCategory = (category || 'Ovozli kutubxona').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const safeTitle = (title || 'Audio Kitob').replace(/[<>&"']/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '"': return '&quot;';
+      case "'": return '&apos;';
+      default: return c;
+    }
+  });
+
+  const safeAuthor = (author || 'Muallif').replace(/[<>&"']/g, (c) => {
+    switch (c) {
+      case '<': return '&lt;';
+      case '>': return '&gt;';
+      case '&': return '&amp;';
+      case '"': return '&quot;';
+      default: return c;
+    }
+  });
+
+  const safeNarrator = (narrator || 'Professional suxandon').replace(/[<>&"']/g, '');
+  const safeCategory = (category || 'Ovozli kutubxona').replace(/[<>&"']/g, '');
+
+  // Word wrap title into 1-3 lines cleanly without foreignObject
+  const words = safeTitle.split(' ');
+  const lines: string[] = [];
+  let curLine = '';
+  for (const w of words) {
+    if ((curLine + ' ' + w).trim().length <= 22) {
+      curLine = (curLine + ' ' + w).trim();
+    } else {
+      if (curLine) lines.push(curLine);
+      curLine = w;
+      if (lines.length >= 3) break;
+    }
+  }
+  if (curLine && lines.length < 3) lines.push(curLine);
+  if (lines.length === 0) lines.push(safeTitle.slice(0, 24));
+
+  // Color palettes
+  const palettes = {
+    gold: {
+      bg1: '#1A1208',
+      bg2: '#0F0B05',
+      accent1: '#fef08a',
+      accent2: '#f59e0b',
+      accent3: '#b45309',
+      glow: '#f59e0b',
+      badgeBg: '#26180B'
+    },
+    emerald: {
+      bg1: '#071811',
+      bg2: '#040F0A',
+      accent1: '#a7f3d0',
+      accent2: '#10b981',
+      accent3: '#047857',
+      glow: '#10b981',
+      badgeBg: '#09291C'
+    },
+    sapphire: {
+      bg1: '#081424',
+      bg2: '#050D18',
+      accent1: '#bae6fd',
+      accent2: '#0ea5e9',
+      accent3: '#0369a1',
+      glow: '#0284c7',
+      badgeBg: '#0C2038'
+    },
+    violet: {
+      bg1: '#190A24',
+      bg2: '#0F0517',
+      accent1: '#f5d0fe',
+      accent2: '#c026d3',
+      accent3: '#701a75',
+      glow: '#a21caf',
+      badgeBg: '#250E36'
+    }
+  };
+
+  const p = palettes[style] || palettes.gold;
+
+  // Title vertical centering based on line count
+  const titleStartY = lines.length === 1 ? 465 : lines.length === 2 ? 445 : 430;
+  const lineHeight = 42;
 
   const svg = `
-  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 900" width="100%" height="100%">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="100%" height="100%">
     <defs>
       <linearGradient id="audioBg" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#190F07" />
-        <stop offset="50%" stop-color="#120A05" />
-        <stop offset="100%" stop-color="#080503" />
+        <stop offset="0%" stop-color="${p.bg1}" />
+        <stop offset="60%" stop-color="${p.bg2}" />
+        <stop offset="100%" stop-color="#050302" />
       </linearGradient>
-      <radialGradient id="centerGlow" cx="50%" cy="38%" r="45%">
-        <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25" />
-        <stop offset="60%" stop-color="#ea580c" stop-opacity="0.08" />
+      <radialGradient id="centerGlow" cx="50%" cy="36%" r="55%">
+        <stop offset="0%" stop-color="${p.glow}" stop-opacity="0.28" />
+        <stop offset="50%" stop-color="${p.accent2}" stop-opacity="0.08" />
         <stop offset="100%" stop-color="#000000" stop-opacity="0" />
       </radialGradient>
-      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-        <stop offset="0%" stop-color="#fbbf24" />
-        <stop offset="100%" stop-color="#d97706" />
+      <linearGradient id="primaryGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="${p.accent1}" />
+        <stop offset="50%" stop-color="${p.accent2}" />
+        <stop offset="100%" stop-color="${p.accent3}" />
       </linearGradient>
     </defs>
 
-    <!-- Background -->
-    <rect width="600" height="900" fill="url(#audioBg)" />
-    <rect width="600" height="900" fill="url(#centerGlow)" />
+    <!-- Canvas Background -->
+    <rect width="800" height="800" fill="url(#audioBg)" />
+    <rect width="800" height="800" fill="url(#centerGlow)" />
 
-    <!-- Vinyl Grooves Graphic -->
-    <circle cx="300" cy="330" r="230" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.06" />
-    <circle cx="300" cy="330" r="190" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.08" />
-    <circle cx="300" cy="330" r="150" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.1" />
+    <!-- Vinyl Disc Grooves & Audio Rings -->
+    <circle cx="400" cy="270" r="230" fill="none" stroke="${p.accent2}" stroke-width="1.2" opacity="0.06" />
+    <circle cx="400" cy="270" r="190" fill="none" stroke="${p.accent2}" stroke-width="1.2" opacity="0.09" />
+    <circle cx="400" cy="270" r="150" fill="none" stroke="${p.accent2}" stroke-width="1.2" opacity="0.12" />
+    <circle cx="400" cy="270" r="110" fill="none" stroke="${p.accent2}" stroke-width="1.5" opacity="0.16" />
+    <circle cx="400" cy="270" r="70" fill="none" stroke="${p.accent2}" stroke-width="1.5" opacity="0.22" />
 
-    <!-- Luxury Borders -->
-    <rect x="24" y="24" width="552" height="852" rx="16" fill="none" stroke="#f59e0b" stroke-width="1.5" opacity="0.3" />
-    <rect x="34" y="34" width="532" height="832" rx="12" fill="none" stroke="#ea580c" stroke-width="0.8" opacity="0.2" />
+    <!-- Premium Frame Borders -->
+    <rect x="32" y="32" width="736" height="736" rx="28" fill="none" stroke="url(#primaryGrad)" stroke-width="2.5" opacity="0.65" />
+    <rect x="42" y="42" width="716" height="716" rx="20" fill="none" stroke="${p.accent2}" stroke-width="0.8" opacity="0.25" />
 
-    <!-- Top Badge -->
-    <rect x="190" y="60" width="220" height="34" rx="17" fill="#26170c" stroke="#f59e0b" stroke-width="1" opacity="0.75" />
-    <text x="300" y="82" text-anchor="middle" fill="#fbbf24" font-size="12" font-family="sans-serif" font-weight="700" letter-spacing="3">
-      🎧 AUDIO KITOB
+    <!-- Top Badge Row: Signal Audio Studio -->
+    <rect x="250" y="58" width="300" height="36" rx="18" fill="${p.badgeBg}" stroke="url(#primaryGrad)" stroke-width="1.2" />
+    <text x="400" y="81" text-anchor="middle" fill="${p.accent1}" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="800" letter-spacing="3.5">
+      AUDIO KITOB • HQ STEREO
     </text>
 
-    <!-- Category -->
-    <text x="300" y="130" text-anchor="middle" fill="#d97706" font-size="12" font-family="sans-serif" font-weight="600" letter-spacing="4" opacity="0.85">
+    <!-- Category Label -->
+    <text x="400" y="124" text-anchor="middle" fill="${p.accent2}" font-size="12" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="700" letter-spacing="3" opacity="0.9">
       ${safeCategory.toUpperCase()}
     </text>
 
-    <!-- Headphones Big Graphic -->
-    <g transform="translate(230, 180) scale(2.8)">
-      <!-- Headband -->
-      <path d="M 10 28 A 15 15 0 0 1 40 28" fill="none" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round" />
-      <!-- Left Ear Cup -->
-      <rect x="6" y="24" width="7" height="15" rx="3.5" fill="url(#goldGrad)" />
-      <!-- Right Ear Cup -->
-      <rect x="37" y="24" width="7" height="15" rx="3.5" fill="url(#goldGrad)" />
-      <!-- Inner detail -->
-      <line x1="9.5" y1="27" x2="9.5" y2="36" stroke="#120A05" stroke-width="1.5" />
-      <line x1="40.5" y1="27" x2="40.5" y2="36" stroke="#120A05" stroke-width="1.5" />
+    <!-- Central Headphones Icon -->
+    <g transform="translate(346, 175) scale(2.2)">
+      <path d="M 12 30 A 16 16 0 0 1 36 30" fill="none" stroke="url(#primaryGrad)" stroke-width="3.5" stroke-linecap="round" />
+      <rect x="7" y="25" width="8" height="16" rx="4" fill="url(#primaryGrad)" />
+      <rect x="33" y="25" width="8" height="16" rx="4" fill="url(#primaryGrad)" />
+      <circle cx="11" cy="33" r="1.5" fill="#000000" />
+      <circle cx="37" cy="33" r="1.5" fill="#000000" />
     </g>
 
-    <!-- Sound Wave Bars Graphic -->
-    <g transform="translate(180, 340)">
-      <rect x="0" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.6"/>
-      <rect x="12" y="10" width="4" height="32" rx="2" fill="#f59e0b" opacity="0.75"/>
-      <rect x="24" y="4" width="4" height="44" rx="2" fill="#f59e0b" opacity="0.85"/>
-      <rect x="36" y="14" width="4" height="24" rx="2" fill="#f59e0b" opacity="0.7"/>
-      <rect x="48" y="0" width="4" height="52" rx="2" fill="#fbbf24" opacity="0.95"/>
-      <rect x="60" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.8"/>
-      <rect x="72" y="2" width="4" height="48" rx="2" fill="#fbbf24" opacity="0.9"/>
-      <rect x="84" y="12" width="4" height="28" rx="2" fill="#f59e0b" opacity="0.75"/>
-      <rect x="96" y="6" width="4" height="40" rx="2" fill="#fbbf24" opacity="0.85"/>
-      <rect x="108" y="0" width="4" height="52" rx="2" fill="#f59e0b" opacity="0.95"/>
-      <rect x="120" y="10" width="4" height="32" rx="2" fill="#f59e0b" opacity="0.8"/>
-      <rect x="132" y="2" width="4" height="48" rx="2" fill="#fbbf24" opacity="0.9"/>
-      <rect x="144" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.65"/>
-      <rect x="156" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.8"/>
-      <rect x="168" y="14" width="4" height="24" rx="2" fill="#f59e0b" opacity="0.7"/>
-      <rect x="180" y="4" width="4" height="44" rx="2" fill="#f59e0b" opacity="0.85"/>
-      <rect x="192" y="12" width="4" height="28" rx="2" fill="#f59e0b" opacity="0.7"/>
-      <rect x="204" y="8" width="4" height="36" rx="2" fill="#f59e0b" opacity="0.75"/>
-      <rect x="216" y="16" width="4" height="20" rx="2" fill="#f59e0b" opacity="0.6"/>
-      <rect x="228" y="20" width="4" height="12" rx="2" fill="#f59e0b" opacity="0.5"/>
+    <!-- Soundwave Equalizer Bars -->
+    <g transform="translate(250, 320)">
+      <rect x="0" y="18" width="6" height="24" rx="3" fill="${p.accent2}" opacity="0.4"/>
+      <rect x="16" y="10" width="6" height="40" rx="3" fill="${p.accent2}" opacity="0.7"/>
+      <rect x="32" y="4" width="6" height="52" rx="3" fill="${p.accent1}" opacity="0.9"/>
+      <rect x="48" y="14" width="6" height="32" rx="3" fill="${p.accent2}" opacity="0.75"/>
+      <rect x="64" y="0" width="6" height="60" rx="3" fill="${p.accent1}" opacity="1"/>
+      <rect x="80" y="8" width="6" height="44" rx="3" fill="${p.accent2}" opacity="0.8"/>
+      <rect x="96" y="2" width="6" height="56" rx="3" fill="${p.accent1}" opacity="0.95"/>
+      <rect x="112" y="12" width="6" height="36" rx="3" fill="${p.accent2}" opacity="0.75"/>
+      <rect x="128" y="6" width="6" height="48" rx="3" fill="${p.accent1}" opacity="0.9"/>
+      <rect x="144" y="0" width="6" height="60" rx="3" fill="${p.accent2}" opacity="1"/>
+      <rect x="160" y="8" width="6" height="44" rx="3" fill="${p.accent2}" opacity="0.8"/>
+      <rect x="176" y="2" width="6" height="56" rx="3" fill="${p.accent1}" opacity="0.95"/>
+      <rect x="192" y="12" width="6" height="36" rx="3" fill="${p.accent2}" opacity="0.75"/>
+      <rect x="208" y="4" width="6" height="52" rx="3" fill="${p.accent1}" opacity="0.9"/>
+      <rect x="224" y="10" width="6" height="40" rx="3" fill="${p.accent2}" opacity="0.7"/>
+      <rect x="240" y="14" width="6" height="32" rx="3" fill="${p.accent2}" opacity="0.6"/>
+      <rect x="256" y="18" width="6" height="24" rx="3" fill="${p.accent2}" opacity="0.4"/>
+      <rect x="272" y="22" width="6" height="16" rx="3" fill="${p.accent2}" opacity="0.3"/>
+      <rect x="288" y="26" width="6" height="8" rx="3" fill="${p.accent2}" opacity="0.2"/>
     </g>
 
-    <!-- Book Title -->
-    <foreignObject x="60" y="425" width="480" height="200">
-      <div xmlns="http://www.w3.org/1999/xhtml" style="display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; height:100%; font-family:serif; color:#ffffff;">
-        <h1 style="font-size:32px; font-weight:700; line-height:1.25; margin:0; text-shadow:0 3px 12px rgba(0,0,0,0.9); letter-spacing:0.5px; color:#ffffff;">
-          ${safeTitle}
-        </h1>
-        <div style="width:70px; height:2.5px; background:linear-gradient(90deg, transparent, #fbbf24, transparent); margin:18px auto 0 auto;"></div>
-      </div>
-    </foreignObject>
+    <!-- Book Title (Pure SVG Text with multiple tspan, 100% reliable) -->
+    <text x="400" y="${titleStartY}" text-anchor="middle" fill="#ffffff" font-size="${lines.length > 2 ? 30 : 35}" font-family="Georgia, 'Times New Roman', serif" font-weight="bold" letter-spacing="0.5">
+      ${lines.map((l, i) => `<tspan x="400" dy="${i === 0 ? 0 : lineHeight}">${l}</tspan>`).join('')}
+    </text>
+
+    <!-- Title Separator Divider -->
+    <rect x="340" y="${titleStartY + lines.length * lineHeight - (lines.length > 1 ? 15 : 20)}" width="120" height="3" rx="1.5" fill="url(#primaryGrad)" />
 
     <!-- Author Name -->
-    <text x="300" y="650" text-anchor="middle" fill="#fde68a" font-size="22" font-family="serif" font-style="italic" font-weight="600" letter-spacing="1">
+    <text x="400" y="${titleStartY + lines.length * lineHeight + 25}" text-anchor="middle" fill="${p.accent1}" font-size="22" font-family="Georgia, 'Times New Roman', serif" font-style="italic" font-weight="600" letter-spacing="0.5">
       ${safeAuthor}
     </text>
 
     <!-- Narrator Badge -->
-    <rect x="120" y="685" width="360" height="42" rx="21" fill="#1C1108" stroke="#f59e0b" stroke-width="1" opacity="0.7" />
-    <text x="300" y="711" text-anchor="middle" fill="#d97706" font-size="13" font-family="sans-serif" font-weight="600" letter-spacing="0.5">
-      🎙️ Suxandon: <tspan fill="#ffffff" font-weight="700">${safeNarrator}</tspan>
+    <rect x="180" y="660" width="440" height="44" rx="22" fill="${p.badgeBg}" stroke="url(#primaryGrad)" stroke-width="1.2" />
+    <text x="400" y="688" text-anchor="middle" fill="${p.accent2}" font-size="13.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" letter-spacing="0.4">
+      Ovoz beruvchi: <tspan fill="#ffffff" font-weight="700">${safeNarrator}</tspan>
     </text>
 
     <!-- Bottom Footer Tag -->
-    <text x="300" y="800" text-anchor="middle" fill="#fbbf24" font-size="11" font-family="sans-serif" font-weight="700" letter-spacing="3" opacity="0.8">
-      SIGNAL BOOKS • OVOZLI KUTUBXONA
-    </text>
-    <text x="300" y="825" text-anchor="middle" fill="#78716c" font-size="10" font-family="sans-serif" letter-spacing="1.5">
-      STUDIO HQ STEREO • ${year}
+    <text x="400" y="745" text-anchor="middle" fill="#78716c" font-size="11" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="600" letter-spacing="2.5">
+      DOLBY DIGITAL • PROFESSIONAL YARATILGAN • ${year}
     </text>
   </svg>
   `.trim();
 
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
+}
+
+/**
+ * Returns an embed preview iframe URL for Google Drive (great for 1-click fallback player)
+ */
+export function getGoogleDrivePreviewUrl(urlOrFileId?: string): string {
+  if (!urlOrFileId) return '';
+  const trimmed = urlOrFileId.trim();
+  const driveInfo = parseGoogleDriveUrl(trimmed);
+  if (driveInfo.isDrive && driveInfo.fileId) {
+    return `https://drive.google.com/file/d/${driveInfo.fileId}/preview`;
+  }
+  return trimmed;
+}
+
+/**
+ * Converts any audio URL or Google Drive link/ID into a streamable direct audio URL
+ */
+export function getDirectAudioUrl(urlOrFileId?: string): string {
+  if (!urlOrFileId) return '';
+  const trimmed = urlOrFileId.trim();
+  if (trimmed.startsWith('blob:') || trimmed.startsWith('data:')) {
+    return trimmed;
+  }
+  const driveInfo = parseGoogleDriveUrl(trimmed);
+  if (driveInfo.isDrive && driveInfo.fileId) {
+    return `/api/drive-audio?id=${driveInfo.fileId}`;
+  }
+  return trimmed;
 }
 
 export function parseGoogleDriveUrl(url: string = ''): GoogleDriveParsedInfo {

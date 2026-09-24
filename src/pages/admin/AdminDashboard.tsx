@@ -2195,6 +2195,50 @@ export const AdminDashboard: React.FC = () => {
                 </div>
               </div>
 
+              {/* Audio Book Settings in Edit Modal */}
+              <div className="p-3.5 rounded-xl bg-[#18120C] border border-amber-900/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <Headphones className="w-4 h-4" />
+                    <span>Audio Kitob Sozlamalari</span>
+                  </label>
+                  <label className="flex items-center gap-2 text-xs text-stone-300 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editingBook.hasAudio || false}
+                      onChange={(e) => setEditingBook({ ...editingBook, hasAudio: e.target.checked })}
+                      className="rounded accent-amber-500"
+                    />
+                    <span>Audio mavjud</span>
+                  </label>
+                </div>
+
+                {editingBook.hasAudio && (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                    <div className="space-y-1 sm:col-span-2">
+                      <label className="text-[11px] text-stone-400">Audio URL yoki Drive havolasi</label>
+                      <input
+                        type="text"
+                        value={editingBook.audioUrl || ''}
+                        onChange={(e) => setEditingBook({ ...editingBook, audioUrl: e.target.value })}
+                        placeholder="/api/drive-audio?id=... yoki https://..."
+                        className="w-full bg-[#110D09] border border-amber-900/40 rounded-lg px-2.5 py-1.5 text-xs text-stone-100 font-mono focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[11px] text-stone-400">Suxandon</label>
+                      <input
+                        type="text"
+                        value={editingBook.narrator || ''}
+                        onChange={(e) => setEditingBook({ ...editingBook, narrator: e.target.value })}
+                        placeholder="Suxandon ismi"
+                        className="w-full bg-[#110D09] border border-amber-900/40 rounded-lg px-2.5 py-1.5 text-xs text-stone-100 focus:outline-none focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-1">
                 <label className="text-xs font-medium text-stone-300">Tavsif</label>
                 <textarea

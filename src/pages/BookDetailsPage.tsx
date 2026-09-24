@@ -16,7 +16,8 @@ import {
   CheckCircle2,
   Clock,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
+  X
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { TelegramService } from '../services/telegramService';
@@ -41,6 +42,7 @@ export const BookDetailsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'about' | 'chapters' | 'author'>('about');
   const [isDownloading, setIsDownloading] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showDriveEmbedModal, setShowDriveEmbedModal] = useState(false);
 
   if (!selectedBook) {
     return (
@@ -48,7 +50,7 @@ export const BookDetailsPage: React.FC = () => {
         <p className="text-slate-400">Kitob tanlanmadi.</p>
         <button
           onClick={() => setActivePage('books')}
-          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold shadow-md transition-all"
+          className="mt-4 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-xs font-bold shadow-md transition-all cursor-pointer"
         >
           Kitoblar ro‘yxatiga qaytish
         </button>
@@ -57,7 +59,8 @@ export const BookDetailsPage: React.FC = () => {
   }
 
   const isFav = favorites.includes(selectedBook.id);
-  const driveInfo = parseGoogleDriveUrl(selectedBook.googleDriveUrl || selectedBook.pdfUrl);
+  const driveInfo = parseGoogleDriveUrl(selectedBook.googleDriveUrl || selectedBook.pdfUrl || selectedBook.audioUrl);
+  const isAudioOnly = selectedBook.hasAudio && (!selectedBook.pdfUrl || selectedBook.pdfUrl === '#' || selectedBook.pages === 0);
 
   // Sync Telegram native MainButton
   React.useEffect(() => {
@@ -202,36 +205,63 @@ export const BookDetailsPage: React.FC = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={() => startReading(selectedBook)}
-              className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95"
-            >
-              <BookOpen className="w-5 h-5 text-stone-950" />
-              <span>PDF mutolaa qilish</span>
-            </button>
+            {isAudioOnly ? (
+              // Audio-only book: Primary CTA is Audio
+              <>
+                <button
+                  onClick={handlePlayAudio}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                >
+                  <Headphones className="w-5 h-5 text-stone-950" />
+                  <span>Audioni tinglash</span>
+                </button>
 
-            {selectedBook.hasAudio && (
-              <button
-                onClick={handlePlayAudio}
-                className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md"
-              >
-                <Headphones className="w-4 h-4 text-amber-400" />
-                <span>Audioni tinglash</span>
-              </button>
+                {driveInfo.isDrive && driveInfo.fileId && (
+                  <button
+                    onClick={() => setShowDriveEmbedModal(true)}
+                    className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                    title="Google Drive rasmiy audio pleyeri"
+                  >
+                    <HardDrive className="w-4 h-4 text-amber-400" />
+                    <span>Drive pleyerida tinglash</span>
+                  </button>
+                )}
+              </>
+            ) : (
+              // Standard or Hybrid Book
+              <>
+                <button
+                  onClick={() => startReading(selectedBook)}
+                  className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-stone-950 text-sm font-bold flex items-center gap-2.5 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                >
+                  <BookOpen className="w-5 h-5 text-stone-950" />
+                  <span>PDF mutolaa qilish</span>
+                </button>
+
+                {selectedBook.hasAudio && (
+                  <button
+                    onClick={handlePlayAudio}
+                    className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-amber-300 border border-amber-500/30 text-sm font-semibold flex items-center gap-2 transition-all shadow-md cursor-pointer"
+                  >
+                    <Headphones className="w-4 h-4 text-amber-400" />
+                    <span>Audioni tinglash</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-amber-400" />
+                  <span>{isDownloading ? 'Yuklanmoqda...' : 'PDF yuklab olish'}</span>
+                </button>
+              </>
             )}
 
             <button
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="px-5 py-3.5 rounded-2xl bg-[#1C140E] hover:bg-[#251B13] text-stone-200 border border-amber-950/80 hover:border-amber-500/40 text-sm font-semibold flex items-center gap-2 transition-all"
-            >
-              <Download className="w-4 h-4 text-amber-400" />
-              <span>{isDownloading ? 'Yuklanmoqda...' : 'PDF yuklab olish'}</span>
-            </button>
-
-            <button
               onClick={() => toggleFavorite(selectedBook.id)}
-              className={`p-3.5 rounded-2xl border transition-all ${
+              className={`p-3.5 rounded-2xl border transition-all cursor-pointer ${
                 isFav 
                   ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' 
                   : 'bg-[#1C140E] text-stone-300 border-amber-950/80 hover:text-white'
@@ -244,7 +274,7 @@ export const BookDetailsPage: React.FC = () => {
             {isAdmin && (
               <button
                 onClick={() => setShowDeleteModal(true)}
-                className="p-3.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-all flex items-center gap-2 text-sm font-semibold"
+                className="p-3.5 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 transition-all flex items-center gap-2 text-sm font-semibold cursor-pointer"
                 title="Kitobni o‘chirish"
               >
                 <Trash2 className="w-4 h-4" />
@@ -262,22 +292,45 @@ export const BookDetailsPage: React.FC = () => {
                 {selectedBook.language}
               </span>
             </div>
+
+            {isAudioOnly ? (
+              <>
+                <div className="space-y-0.5">
+                  <span className="text-stone-500 block">Suxandon</span>
+                  <span className="font-semibold text-stone-200 flex items-center gap-1 truncate" title={selectedBook.narrator}>
+                    <Headphones className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                    <span className="truncate">{selectedBook.narrator || 'Suxandon'}</span>
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-stone-500 block">Davomiyligi</span>
+                  <span className="font-semibold text-stone-200 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-amber-400" />
+                    {selectedBook.audioDuration || 'To‘liq audio'}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-0.5">
+                  <span className="text-stone-500 block">Sahifalar soni</span>
+                  <span className="font-semibold text-stone-200 flex items-center gap-1">
+                    <FileText className="w-3.5 h-3.5 text-orange-400" />
+                    {selectedBook.pages} bet
+                  </span>
+                </div>
+                <div className="space-y-0.5">
+                  <span className="text-stone-500 block">Nashr yili</span>
+                  <span className="font-semibold text-stone-200 flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                    {selectedBook.publicationYear}-yil
+                  </span>
+                </div>
+              </>
+            )}
+
             <div className="space-y-0.5">
-              <span className="text-stone-500 block">Sahifalar soni</span>
-              <span className="font-semibold text-stone-200 flex items-center gap-1">
-                <FileText className="w-3.5 h-3.5 text-orange-400" />
-                {selectedBook.pages} bet
-              </span>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-stone-500 block">Nashr yili</span>
-              <span className="font-semibold text-stone-200 flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-amber-400" />
-                {selectedBook.publicationYear}-yil
-              </span>
-            </div>
-            <div className="space-y-0.5">
-              <span className="text-stone-500 block">Fayl hajmi</span>
+              <span className="text-stone-500 block">{isAudioOnly ? 'Audio hajmi' : 'Fayl hajmi'}</span>
               <span className="font-semibold text-stone-200 flex items-center gap-1">
                 <HardDrive className="w-3.5 h-3.5 text-emerald-400" />
                 {selectedBook.fileSize}
@@ -391,9 +444,53 @@ export const BookDetailsPage: React.FC = () => {
                   setShowDeleteModal(false);
                   await deleteBook(idToDelete);
                 }}
-                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors shadow-lg shadow-rose-600/30"
+                className="px-5 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold transition-colors shadow-lg shadow-rose-600/30 cursor-pointer"
               >
                 Ha, o‘chirilsin
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Google Drive Embed Audio Modal */}
+      {showDriveEmbedModal && driveInfo.isDrive && driveInfo.fileId && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl bg-[#140E0A] border border-amber-500/40 rounded-2xl overflow-hidden shadow-2xl p-4 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-amber-950">
+              <div className="flex items-center gap-2">
+                <Headphones className="w-4 h-4 text-amber-400" />
+                <div>
+                  <h3 className="font-serif-title text-base font-bold text-stone-100 line-clamp-1">
+                    {selectedBook.title}
+                  </h3>
+                  <p className="text-xs text-stone-400">Google Drive rasmiy audio pleyeri</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowDriveEmbedModal(false)}
+                className="p-1.5 rounded-lg bg-stone-900 text-stone-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black border border-stone-800">
+              <iframe
+                src={`https://drive.google.com/file/d/${driveInfo.fileId}/preview`}
+                className="w-full h-full"
+                allow="autoplay"
+                title={selectedBook.title}
+              />
+            </div>
+
+            <div className="flex items-center justify-between text-xs text-stone-400">
+              <span>Google Drive audio oqimi</span>
+              <button
+                onClick={() => setShowDriveEmbedModal(false)}
+                className="px-4 py-1.5 rounded-lg bg-amber-500 text-stone-950 font-semibold cursor-pointer"
+              >
+                Yopish
               </button>
             </div>
           </div>
